@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import ActivityTable from './components/ActivityTable';
+import NetworkGraph from './components/NetworkGraph';
+import { calculateCpm, CpmResult } from './cpm';
 import { Activity, Unit } from './types';
 
-// 새 행 추가 시 중복 없는 id를 부여하기 위한 카운터 (초기 3개 행 이후부터 시작)
 let nextId = 4;
 
-// 앱 초기 실행 시 기본으로 표시할 빈 작업 3개
 const initialActivities: Activity[] = [
   { id: 1, name: '', description: '', predecessors: '', duration: '' },
   { id: 2, name: '', description: '', predecessors: '', duration: '' },
@@ -13,12 +13,11 @@ const initialActivities: Activity[] = [
 ];
 
 export default function App() {
-  // 전체 작업 목록 상태
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
-  // 전체 공통 시간 단위 상태 (기본값: 일)
   const [unit, setUnit] = useState<Unit>('day');
+  // CPM 계산 결과 (null이면 아직 계산 전)
+  const [result, setResult] = useState<CpmResult | null>(null);
 
-  // 새 빈 작업 행 추가
   const handleAdd = () => {
     setActivities((prev) => [
       ...prev,
@@ -26,23 +25,27 @@ export default function App() {
     ]);
   };
 
-  // 특정 작업의 특정 필드 값 변경
   const handleChange = (id: number, field: keyof Activity, value: string) => {
     setActivities((prev) =>
       prev.map((act) => (act.id === id ? { ...act, [field]: value } : act))
     );
   };
 
-  // 특정 작업 행 삭제
   const handleDelete = (id: number) => {
     setActivities((prev) => prev.filter((act) => act.id !== id));
+  };
+
+  // 입력 데이터를 기반으로 CPM 계산 후 결과 저장
+  const handleCalculate = () => {
+    const cpmResult = calculateCpm(activities);
+    setResult(cpmResult);
   };
 
   return (
     <div className="container">
       <h1>CPM 네트워크</h1>
       <p className="subtitle">작업 정보를 입력하고 임계 경로를 계산하세요.</p>
-      {/* 작업 입력 테이블 컴포넌트 */}
+
       <ActivityTable
         activities={activities}
         unit={unit}
@@ -51,6 +54,21 @@ export default function App() {
         onDelete={handleDelete}
         onUnitChange={setUnit}
       />
+
+      <div className="actions">
+        <button id="calculate-btn" onClick={handleCalculate}>그래프 생성</button>
+      </div>
+
+      {/* 계산 결과가 있을 때만 그래프와 요약 표시 */}
+      {result && (
+        <>
+          <div className="result-summary">
+            <span>전체 프로젝트 기간: <strong>{result.projectDuration}{unit === 'hour' ? '시간' : unit === 'day' ? '일' : '주'}</strong></span>
+            <span>임계 경로: <strong style={{ color: '#e53e3e' }}>{result.nodes.filter((n) => n.isCritical).map((n) => n.name).join(' → ')}</strong></span>
+          </div>
+          <NetworkGraph result={result} unit={unit} />
+        </>
+      )}
     </div>
   );
 }

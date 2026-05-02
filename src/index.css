@@ -142,3 +142,29 @@ tbody td input:focus {
 #add-btn:hover {
   background-color: #357abd;
 }
+
+#calculate-btn {
+  background-color: #38a169;
+  color: #ffffff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#calculate-btn:hover {
+  background-color: #2f855a;
+}
+
+.result-summary {
+  display: flex;
+  gap: 32px;
+  margin: 24px 0 16px;
+  padding: 16px 20px;
+  background-color: #f7fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-size: 0.95rem;
+}
