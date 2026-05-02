@@ -16,9 +16,9 @@ import {
   ReactFlowInstance,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { CpmResult } from '../cpm';
+import { CpmResult } from '../lib/cpm';
 import { nodeTypes } from './CpmNode';
-import { useCpmLayout } from './useCpmLayout';
+import { useCpmLayout } from '../hooks/useCpmLayout';
 
 interface Props {
   result: CpmResult;

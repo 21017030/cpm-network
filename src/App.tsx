@@ -13,7 +13,7 @@ import React from 'react';
 import ActivityTable from './components/ActivityTable';
 import NetworkGraph from './components/NetworkGraph';
 import CpmGuide from './components/CpmGuide';
-import { calculateCpm, CpmResult } from './cpm';
+import { calculateCpm, CpmResult } from './lib/cpm';
 import { Activity, Unit } from './types';
 
 // 새 행 추가 시 사용할 전역 ID 카운터.

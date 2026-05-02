@@ -11,8 +11,8 @@
 
 import { useMemo, useEffect, useRef, useCallback } from 'react';
 import { Node, Edge, MarkerType, useNodesState, useEdgesState, NodeOrigin } from '@xyflow/react';
-import { CpmResult } from '../cpm';
-import { CpmNodeData } from './CpmNode';
+import { CpmResult } from '../lib/cpm';
+import { CpmNodeData } from '../components/CpmNode';
 
 // ReactFlow의 origin [0.5, 0.5]: position이 노드의 중심점을 가리킨다
 const NODE_ORIGIN: NodeOrigin = [0.5, 0.5];

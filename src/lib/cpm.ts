@@ -9,7 +9,7 @@
 //   5. 여유 시간(TF) 및 임계 경로 판별
 // ─────────────────────────────────────────────
 
-import { Activity } from './types';
+import { Activity } from '../types';
 
 // 계산 결과로 생성되는 노드 1개의 구조
 export interface CpmNode {
