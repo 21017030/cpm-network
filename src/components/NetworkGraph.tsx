@@ -443,13 +443,21 @@ export default function NetworkGraph({ result }: Props) {
                 </div>
 
                 {/* 항목 설명 */}
-                <div style={{ fontSize: 13, lineHeight: 2.2, color: '#4a5568' }}>
-                  <div><b>ES</b> 최조 시작일</div>
-                  <div><b>DR</b> 소요 기간</div>
-                  <div><b>EF</b> 최조 완료일</div>
-                  <div><b>LS</b> 최지 시작일</div>
-                  <div><b>TF</b> 여유 시간</div>
-                  <div><b>LF</b> 최지 완료일</div>
+                <div style={{ fontSize: 12, lineHeight: 1.6, color: '#4a5568' }}>
+                  {[
+                    ['ES', 'Earliest Start', '최조 착수 시간'],
+                    ['EF', 'Earliest Finish', '최조 완료 시간'],
+                    ['DR', 'Duration', '작업 소요 시간'],
+                    ['LS', 'Latest Start', '최종 착수 가능 시간'],
+                    ['LF', 'Latest Finish', '최종 완료 가능 시간'],
+                    ['TF', 'Total Float', '총 여유 시간'],
+                  ].map(([abbr, en, ko]) => (
+                    <div key={abbr} style={{ marginBottom: 6 }}>
+                      <span style={{ fontWeight: 700, fontSize: 13 }}>{abbr}</span>
+                      <span style={{ color: '#718096', fontSize: 11 }}> {en}</span>
+                      <div style={{ paddingLeft: 4 }}>{ko}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
