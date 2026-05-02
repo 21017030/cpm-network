@@ -212,59 +212,60 @@ export default function CpmGuide({ onBack }: Props) {
                 </tbody>
               </table>
 
-              {/* 상세 설명 토글 */}
-              <button
-                onClick={() => setShowFieldDetail(v => !v)}
-                style={{
-                  marginTop: 12,
-                  width: '100%',
-                  background: showFieldDetail ? '#ebf8ff' : '#f7fafc',
-                  border: `1px solid ${showFieldDetail ? '#90cdf4' : '#e2e8f0'}`,
-                  borderRadius: 8,
-                  padding: '10px 16px',
-                  cursor: 'pointer',
-                  fontSize: '0.88rem',
-                  color: '#4a5568',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  fontWeight: 600,
-                }}
-              >
-                <span>각 항목 상세 설명</span>
-                <span style={{ fontSize: '0.75rem', color: '#718096' }}>{showFieldDetail ? '▲ 접기' : '▼ 펼치기'}</span>
-              </button>
-
-              {showFieldDetail && (
-                <div style={{ marginTop: 4, border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
-                  {FIELD_DETAILS.map((f, i) => (
-                    <div
-                      key={f.abbr}
-                      style={{
-                        padding: '16px 18px',
-                        borderBottom: i < FIELD_DETAILS.length - 1 ? '1px solid #e2e8f0' : undefined,
-                        background: i % 2 === 0 ? '#fff' : '#f9fafb',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
-                        <span style={{ fontWeight: 700, fontSize: '1rem', color: '#4a90d9', minWidth: 28 }}>{f.abbr}</span>
-                        <span style={{ fontSize: '0.82rem', color: '#718096' }}>{f.en}</span>
-                        <span style={{ fontSize: '0.85rem', color: '#4a5568', fontWeight: 600 }}>— {f.summary}</span>
-                      </div>
-                      <p style={{ margin: 0, fontSize: '0.88rem', color: '#4a5568', lineHeight: 1.8, paddingLeft: 38 }}>
-                        {f.detail}
-                      </p>
-                      {f.formula && (
-                        <div style={{ marginTop: 8, marginLeft: 38, display: 'inline-block', background: '#ebf8ff', border: '1px solid #bee3f8', borderRadius: 6, padding: '4px 12px', fontFamily: 'monospace', fontSize: '0.88rem', color: '#2b6cb0' }}>
-                          {f.formula}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
+
+          {/* 상세 설명 토글 — 전체 너비 */}
+          <button
+            onClick={() => setShowFieldDetail(v => !v)}
+            style={{
+              marginTop: 20,
+              width: '100%',
+              background: showFieldDetail ? '#ebf8ff' : '#f7fafc',
+              border: `1px solid ${showFieldDetail ? '#90cdf4' : '#e2e8f0'}`,
+              borderRadius: 8,
+              padding: '11px 18px',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              color: '#4a5568',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontWeight: 600,
+            }}
+          >
+            <span>각 항목 상세 설명</span>
+            <span style={{ fontSize: '0.78rem', color: '#718096' }}>{showFieldDetail ? '▲ 접기' : '▼ 펼치기'}</span>
+          </button>
+
+          {showFieldDetail && (
+            <div style={{ marginTop: 4, border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+              {FIELD_DETAILS.map((f, i) => (
+                <div
+                  key={f.abbr}
+                  style={{
+                    padding: '18px 22px',
+                    borderBottom: i < FIELD_DETAILS.length - 1 ? '1px solid #e2e8f0' : undefined,
+                    background: i % 2 === 0 ? '#fff' : '#f9fafb',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8 }}>
+                    <span style={{ fontWeight: 700, fontSize: '1rem', color: '#4a90d9', minWidth: 32 }}>{f.abbr}</span>
+                    <span style={{ fontSize: '0.83rem', color: '#718096' }}>{f.en}</span>
+                    <span style={{ fontSize: '0.88rem', color: '#4a5568', fontWeight: 600 }}>— {f.summary}</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '0.9rem', color: '#4a5568', lineHeight: 1.85, paddingLeft: 42 }}>
+                    {f.detail}
+                  </p>
+                  {f.formula && (
+                    <div style={{ marginTop: 10, marginLeft: 42, display: 'inline-block', background: '#ebf8ff', border: '1px solid #bee3f8', borderRadius: 6, padding: '5px 14px', fontFamily: 'monospace', fontSize: '0.9rem', color: '#2b6cb0' }}>
+                      {f.formula}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* ── Section 3: 계산 절차 ── */}
