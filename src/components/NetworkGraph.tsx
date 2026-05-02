@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import {
   ReactFlow,
   useNodesState,
@@ -284,8 +284,6 @@ function buildFlowElements(result: CpmResult, detailLayout = false): { nodes: No
     id: `${e.from}-${e.to}`,
     source: e.from,
     target: e.to,
-    // 상세 모드에서는 smoothstep(직각 라우팅)으로 박스 노드와 겹치는 구간을 줄임
-    type: detailLayout ? 'smoothstep' : undefined,
     animated: e.isCritical,
     style: { stroke: e.isCritical ? '#e53e3e' : '#a0aec0', strokeWidth: e.isCritical ? 2.5 : 1.5 },
     markerEnd: { type: MarkerType.ArrowClosed, color: e.isCritical ? '#e53e3e' : '#a0aec0', width: 18, height: 18 },
@@ -341,20 +339,15 @@ export default function NetworkGraph({ result }: Props) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(enrichedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(baseEdges);
 
-  // baseNodes 참조가 바뀌면(레이아웃 모드 전환 또는 result 변경) 위치도 새 레이아웃으로 초기화
-  const prevBaseNodesRef = useRef(baseNodes);
-
   useEffect(() => {
-    const layoutChanged = prevBaseNodesRef.current !== baseNodes;
-    prevBaseNodesRef.current = baseNodes;
     setNodes(prev => {
       const prevMap = new Map(prev.map(n => [n.id, n]));
       const sameGraph =
         enrichedNodes.length === prev.length &&
         enrichedNodes.every(n => prevMap.has(n.id));
-      // result 변경 또는 레이아웃 모드 전환 시 위치까지 완전 초기화
-      if (!sameGraph || layoutChanged) return enrichedNodes;
-      // 그 외(expand/collapse 등)는 data/style만 교체하고 위치는 현재 상태 유지
+      // result가 바뀌어 노드 구성이 달라진 경우에만 위치까지 완전 초기화
+      if (!sameGraph) return enrichedNodes;
+      // 상세 모드 전환 / expand 등은 data·style만 교체하고 위치는 현재 상태 유지
       return enrichedNodes.map(updated => ({
         ...updated,
         position: prevMap.get(updated.id)?.position ?? updated.position,
