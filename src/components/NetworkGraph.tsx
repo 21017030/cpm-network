@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   ReactFlow,
   useNodesState,
@@ -77,6 +77,15 @@ function buildFlowElements(result: CpmResult, unit: Unit): { nodes: Node[]; edge
   });
 
   const nodes: Node[] = result.nodes.map((n) => {
+    const borderColor = n.isCritical ? '#e53e3e' : '#cbd5e0';
+    const dividerColor = n.isCritical ? '#feb2b2' : '#e2e8f0';
+    const cellStyle = (withRightBorder: boolean): React.CSSProperties => ({
+      padding: '4px 6px',
+      borderRight: withRightBorder ? `1px solid ${dividerColor}` : undefined,
+      textAlign: 'center' as const,
+    });
+    const labelStyle: React.CSSProperties = { fontSize: 10, color: '#718096', marginBottom: 2 };
+    const valueStyle: React.CSSProperties = { fontWeight: 700, fontSize: 13, color: n.isCritical ? '#e53e3e' : '#2d3748' };
     return {
       id: n.id,
       position: { x: (level.get(n.id) ?? 0) * COL_WIDTH, y: posY.get(n.id) ?? 0 },
@@ -84,28 +93,51 @@ function buildFlowElements(result: CpmResult, unit: Unit): { nodes: Node[]; edge
       targetPosition: Position.Left,
       style: {
         background: n.isCritical ? '#fff5f5' : '#f7fafc',
-        border: `2px solid ${n.isCritical ? '#e53e3e' : '#cbd5e0'}`,
+        border: `2px solid ${borderColor}`,
         borderRadius: 8,
         padding: 0,
-        width: 180,
+        width: 210,
+        overflow: 'hidden',
       },
       data: {
         label: (
-          <div style={{ fontSize: 12, textAlign: 'left', padding: '8px 12px' }}>
-            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4, color: n.isCritical ? '#e53e3e' : '#2d3748' }}>
+          <div style={{ fontSize: 12, width: '100%' }}>
+            {/* 상단: ES | DR | EF */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderBottom: `1px solid ${dividerColor}` }}>
+              <div style={cellStyle(true)}>
+                <div style={labelStyle}>ES</div>
+                <div style={valueStyle}>{n.es}</div>
+              </div>
+              <div style={cellStyle(true)}>
+                <div style={labelStyle}>DR</div>
+                <div style={valueStyle}>{n.duration}</div>
+              </div>
+              <div style={cellStyle(false)}>
+                <div style={labelStyle}>EF</div>
+                <div style={valueStyle}>{n.ef}</div>
+              </div>
+            </div>
+            {/* 중단: 작업명 */}
+            <div style={{ padding: '6px 10px', borderBottom: `1px solid ${dividerColor}`, textAlign: 'center', fontWeight: 700, fontSize: 13, color: n.isCritical ? '#e53e3e' : '#2d3748' }}>
               {n.name}
+              {n.description && (
+                <div style={{ fontWeight: 400, fontSize: 10, color: '#718096', marginTop: 2 }}>{n.description}</div>
+              )}
             </div>
-            {n.description && (
-              <div style={{ color: '#718096', marginBottom: 4 }}>{n.description}</div>
-            )}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, color: '#4a5568' }}>
-              <span>ES: {n.es}</span>
-              <span>EF: {n.ef}</span>
-              <span>LS: {n.ls}</span>
-              <span>LF: {n.lf}</span>
-            </div>
-            <div style={{ marginTop: 4, color: '#718096' }}>
-              기간: {n.duration}{unitLabel[unit]} | 여유: {n.float}{unitLabel[unit]}
+            {/* 하단: LS | TF | LF */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
+              <div style={cellStyle(true)}>
+                <div style={labelStyle}>LS</div>
+                <div style={valueStyle}>{n.ls}</div>
+              </div>
+              <div style={cellStyle(true)}>
+                <div style={labelStyle}>TF</div>
+                <div style={valueStyle}>{n.float}</div>
+              </div>
+              <div style={cellStyle(false)}>
+                <div style={labelStyle}>LF</div>
+                <div style={valueStyle}>{n.lf}</div>
+              </div>
             </div>
           </div>
         ),
