@@ -370,8 +370,8 @@ export default function NetworkGraph({ result }: Props) {
   }, [detailMode]);
 
   return (
-    <div style={{ borderRadius: 8, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-      <div style={{ width: '100%', height: 700 }}>
+    <div style={{ maxWidth: 1000, margin: '0 auto', borderRadius: 8, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+      <div style={{ width: '100%', height: 600 }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -379,6 +379,7 @@ export default function NetworkGraph({ result }: Props) {
           onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
           onNodeClick={handleNodeClick}
+          minZoom={0.1}
           fitView
         />
       </div>
