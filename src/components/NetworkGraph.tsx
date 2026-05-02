@@ -10,6 +10,7 @@ import {
   Handle,
   NodeProps,
   NodeOrigin,
+  ReactFlowInstance,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { CpmResult } from '../cpm';
@@ -296,6 +297,7 @@ function buildFlowElements(result: CpmResult): { nodes: Node[]; edges: Edge[] } 
 export default function NetworkGraph({ result }: Props) {
   const [detailMode, setDetailMode] = useState(false);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+  const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
 
   const { nodes: baseNodes, edges: baseEdges } = useMemo(() => buildFlowElements(result), [result]);
 
@@ -379,6 +381,7 @@ export default function NetworkGraph({ result }: Props) {
           onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
           onNodeClick={handleNodeClick}
+          onInit={setRfInstance}
           minZoom={0.1}
           fitView
         />
@@ -433,7 +436,21 @@ export default function NetworkGraph({ result }: Props) {
         <label htmlFor="detail-mode" style={{ cursor: 'pointer', fontSize: 14, color: '#4a5568', userSelect: 'none' }}>
           전체 상세 정보 표시
         </label>
-        <div style={{ marginLeft: 'auto' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+          <button
+            onClick={() => rfInstance?.fitView({ duration: 400 })}
+            style={{
+              padding: '4px 12px',
+              fontSize: 13,
+              color: '#4a5568',
+              background: '#fff',
+              border: '1px solid #cbd5e0',
+              borderRadius: 6,
+              cursor: 'pointer',
+            }}
+          >
+            중앙으로
+          </button>
           <button
             onClick={handleResetPositions}
             style={{

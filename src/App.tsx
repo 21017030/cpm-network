@@ -97,8 +97,8 @@ export default function App() {
           </div>
           <NetworkGraph result={result} />
           <button
-            onClick={() => graphRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-            title="그래프로 이동"
+            onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+            title="맨 아래로 이동"
             style={{
               position: 'fixed',
               bottom: 28,
@@ -106,16 +106,19 @@ export default function App() {
               background: '#4a90d9',
               color: '#fff',
               border: 'none',
-              borderRadius: 24,
-              padding: '10px 18px',
-              fontSize: 14,
-              fontWeight: 600,
+              borderRadius: '50%',
+              width: 44,
+              height: 44,
+              fontSize: 20,
               cursor: 'pointer',
               boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
               zIndex: 1000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            그래프 ↓
+            ↓
           </button>
         </>
       )}
