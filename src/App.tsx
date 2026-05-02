@@ -1,10 +1,26 @@
 import { useState, useRef } from 'react';
+import React from 'react';
 import ActivityTable from './components/ActivityTable';
 import NetworkGraph from './components/NetworkGraph';
 import { calculateCpm, CpmResult } from './cpm';
 import { Activity, Unit } from './types';
 
 let nextId = 14;
+
+const scrollBtnStyle: React.CSSProperties = {
+  background: '#4a90d9',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '50%',
+  width: 44,
+  height: 44,
+  fontSize: 20,
+  cursor: 'pointer',
+  boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+};
 
 const initialActivities: Activity[] = [
   { id: 1, name: '', description: '', predecessors: [], duration: '' },
@@ -96,32 +112,26 @@ export default function App() {
             <span>임계 경로: <strong style={{ color: '#e53e3e' }}>{result.nodes.filter((n) => n.isCritical).map((n) => n.name).join(' → ')}</strong></span>
           </div>
           <NetworkGraph result={result} />
-          <button
-            onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
-            title="맨 아래로 이동"
-            style={{
-              position: 'fixed',
-              bottom: 28,
-              right: 28,
-              background: '#4a90d9',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '50%',
-              width: 44,
-              height: 44,
-              fontSize: 20,
-              cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
-              zIndex: 1000,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            ↓
-          </button>
         </>
       )}
+
+      {/* 스크롤 버튼 — 항상 표시 */}
+      <div style={{ position: 'fixed', bottom: 28, right: 28, display: 'flex', flexDirection: 'column', gap: 8, zIndex: 1000 }}>
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          title="맨 위로"
+          style={scrollBtnStyle}
+        >
+          ↑
+        </button>
+        <button
+          onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+          title="맨 아래로"
+          style={scrollBtnStyle}
+        >
+          ↓
+        </button>
+      </div>
     </div>
   );
 }

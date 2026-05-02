@@ -387,7 +387,7 @@ export default function NetworkGraph({ result }: Props) {
           fitView
         />
 
-        {/* 범례 패널 (버튼 클릭 시 표시) */}
+        {/* 도움말 패널 (버튼 클릭 시 표시) */}
         {showLegend && (
           <div style={{
             position: 'absolute',
@@ -396,87 +396,65 @@ export default function NetworkGraph({ result }: Props) {
             background: '#fff',
             border: '1px solid #e2e8f0',
             borderRadius: 10,
-            padding: '16px 18px',
+            padding: '18px 20px',
             zIndex: 20,
             boxShadow: '0 4px 16px rgba(0,0,0,0.13)',
-            width: 340,
+            width: 360,
             color: '#2d3748',
           }}>
-            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 14, borderBottom: '1px solid #e2e8f0', paddingBottom: 8 }}>범례</div>
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16, borderBottom: '1px solid #e2e8f0', paddingBottom: 10 }}>도움말</div>
 
             {/* 원형 노드 */}
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ fontWeight: 600, fontSize: 12, color: '#718096', marginBottom: 10 }}>원형 노드</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-                <div style={{ position: 'relative', flexShrink: 0, width: 64, height: 64, marginTop: 22 }}>
-                  <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 4, fontWeight: 700, fontSize: 15, color: '#1a202c', whiteSpace: 'nowrap' }}>3</div>
-                  <div style={{ width: 64, height: 64, borderRadius: '50%', border: '2px solid #a0aec0', background: '#f7fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 20, color: '#1a202c' }}>A</div>
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontWeight: 600, fontSize: 13, color: '#718096', marginBottom: 12 }}>원형 노드</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+                <div style={{ position: 'relative', flexShrink: 0, width: 70, height: 70, marginTop: 26 }}>
+                  <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 5, fontWeight: 700, fontSize: 15, color: '#718096', whiteSpace: 'nowrap' }}>소요 기간</div>
+                  <div style={{ width: 70, height: 70, borderRadius: '50%', border: '2px solid #a0aec0', background: '#f7fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 18, color: '#718096' }}>작업명</div>
                 </div>
-                <div style={{ fontSize: 12, lineHeight: 2, color: '#4a5568' }}>
-                  <div>↑ 원 위 숫자: <b>소요 기간</b></div>
-                  <div>○ 원 안 문자: <b>작업명</b></div>
+                <div style={{ fontSize: 14, lineHeight: 2.2, color: '#4a5568' }}>
+                  <div>↑ 원 위: <b>소요 기간</b></div>
+                  <div>○ 원 안: <b>작업명</b></div>
                 </div>
               </div>
             </div>
 
             {/* 상세 노드 */}
             <div>
-              <div style={{ fontWeight: 600, fontSize: 12, color: '#718096', marginBottom: 10 }}>상세 노드 (클릭하여 확인)</div>
-              <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-                {/* 미니 노드 그림 */}
-                <div style={{ flexShrink: 0 }}>
-                  {/* 일반 노드 */}
-                  <div style={{ border: '2px solid #cbd5e0', borderRadius: 6, background: '#f7fafc', width: 138, marginBottom: 6 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderBottom: '1px solid #e2e8f0' }}>
-                      {[['ES','0'],['DR','3'],['EF','3']].map(([lbl, val], i) => (
-                        <div key={lbl} style={{ padding: '3px 4px', textAlign: 'center', borderRight: i < 2 ? '1px solid #e2e8f0' : undefined }}>
-                          <div style={{ fontSize: 8, color: '#718096' }}>{lbl}</div>
-                          <div style={{ fontSize: 13, fontWeight: 700 }}>{val}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <div style={{ padding: '4px', textAlign: 'center', fontWeight: 700, fontSize: 13, borderBottom: '1px solid #e2e8f0' }}>A</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
-                      {[['LS','0'],['TF','0'],['LF','3']].map(([lbl, val], i) => (
-                        <div key={lbl} style={{ padding: '3px 4px', textAlign: 'center', borderRight: i < 2 ? '1px solid #e2e8f0' : undefined }}>
-                          <div style={{ fontSize: 8, color: '#718096' }}>{lbl}</div>
-                          <div style={{ fontSize: 13, fontWeight: 700 }}>{val}</div>
-                        </div>
-                      ))}
-                    </div>
+              <div style={{ fontWeight: 600, fontSize: 13, color: '#718096', marginBottom: 12 }}>상세 노드 (클릭하여 확인)</div>
+              <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+                {/* 미니 노드 그림 — 값 없이 항목명만 */}
+                <div style={{ border: '2px solid #cbd5e0', borderRadius: 6, background: '#f7fafc', flexShrink: 0, width: 150 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderBottom: '1px solid #e2e8f0' }}>
+                    {['ES', 'DR', 'EF'].map((lbl, i) => (
+                      <div key={lbl} style={{ padding: '8px 4px', textAlign: 'center', borderRight: i < 2 ? '1px solid #e2e8f0' : undefined }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: '#4a5568' }}>{lbl}</div>
+                      </div>
+                    ))}
                   </div>
-                  {/* 임계 경로 노드 */}
-                  <div style={{ border: '2px solid #e53e3e', borderRadius: 6, background: '#fff5f5', width: 138 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderBottom: '1px solid #feb2b2' }}>
-                      {[['ES','0'],['DR','5'],['EF','5']].map(([lbl, val], i) => (
-                        <div key={lbl} style={{ padding: '3px 4px', textAlign: 'center', borderRight: i < 2 ? '1px solid #feb2b2' : undefined }}>
-                          <div style={{ fontSize: 8, color: '#718096' }}>{lbl}</div>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: '#c53030' }}>{val}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <div style={{ padding: '4px', textAlign: 'center', fontWeight: 700, fontSize: 13, borderBottom: '1px solid #feb2b2', color: '#c53030' }}>B</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
-                      {[['LS','0'],['TF','0'],['LF','5']].map(([lbl, val], i) => (
-                        <div key={lbl} style={{ padding: '3px 4px', textAlign: 'center', borderRight: i < 2 ? '1px solid #feb2b2' : undefined }}>
-                          <div style={{ fontSize: 8, color: '#718096' }}>{lbl}</div>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: '#c53030' }}>{val}</div>
-                        </div>
-                      ))}
-                    </div>
+                  <div style={{ padding: '8px 4px', textAlign: 'center', fontWeight: 700, fontSize: 13, borderBottom: '1px solid #e2e8f0', color: '#718096' }}>작업명</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
+                    {['LS', 'TF', 'LF'].map((lbl, i) => (
+                      <div key={lbl} style={{ padding: '8px 4px', textAlign: 'center', borderRight: i < 2 ? '1px solid #e2e8f0' : undefined }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: '#4a5568' }}>{lbl}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
                 {/* 항목 설명 */}
-                <div style={{ fontSize: 11, lineHeight: 2, color: '#4a5568' }}>
+                <div style={{ fontSize: 13, lineHeight: 2.2, color: '#4a5568' }}>
                   <div><b>ES</b> 최조 시작일</div>
                   <div><b>DR</b> 소요 기간</div>
                   <div><b>EF</b> 최조 완료일</div>
                   <div><b>LS</b> 최지 시작일</div>
                   <div><b>TF</b> 여유 시간</div>
                   <div><b>LF</b> 최지 완료일</div>
-                  <div style={{ marginTop: 6, color: '#e53e3e', fontWeight: 600 }}>빨간색: 임계 경로</div>
                 </div>
+              </div>
+
+              <div style={{ marginTop: 12, fontSize: 13, color: '#e53e3e', fontWeight: 600 }}>
+                🔴 빨간색 노드 / 선: 임계 경로
               </div>
             </div>
           </div>
@@ -541,7 +519,7 @@ export default function NetworkGraph({ result }: Props) {
               cursor: 'pointer',
             }}
           >
-            범례
+            도움말
           </button>
         </div>
       </div>
