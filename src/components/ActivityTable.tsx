@@ -36,10 +36,10 @@ export default function ActivityTable({ activities, unit, onAdd, onChange, onPre
         <table>
           <thead>
             <tr>
-              <th style={{ width: '11%' }}>작업</th>
+              <th style={{ width: '16%' }}>작업</th>
               <th style={{ width: '38%' }}>작업 설명</th>
               <th style={{ width: '27%' }}>선행 작업</th>
-              <th style={{ width: '16%' }}>소요 기간 ({unitLabel[unit]})</th>
+              <th style={{ width: '11%' }}>소요 기간 ({unitLabel[unit]})</th>
               <th></th>
             </tr>
           </thead>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import {
   ReactFlow,
   useNodesState,
@@ -27,15 +27,66 @@ type CpmNodeData = {
   tf: number;
   lf: number;
   isCritical: boolean;
+  isExpanded: boolean;
+  detailMode: boolean;
   [key: string]: unknown;
 };
 
 function CpmNodeComponent({ data }: NodeProps) {
   const [hovered, setHovered] = useState(false);
-  const { es, dr, ef, name, description, ls, tf, lf, isCritical } = data as CpmNodeData;
+  const { es, dr, ef, name, description, ls, tf, lf, isCritical, isExpanded, detailMode } = data as CpmNodeData;
 
+  const showDetail = detailMode || isExpanded;
   const dividerColor = isCritical ? '#feb2b2' : '#e2e8f0';
   const textColor = isCritical ? '#c53030' : '#1a202c';
+  const borderColor = isCritical ? '#e53e3e' : '#a0aec0';
+
+  if (!showDetail) {
+    return (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          borderRadius: '50%',
+          background: isCritical ? '#fff5f5' : '#f7fafc',
+          border: `2px solid ${borderColor}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          fontWeight: 700,
+          fontSize: 18,
+          color: textColor,
+          position: 'relative',
+          boxSizing: 'border-box',
+        }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        <Handle type="target" position={Position.Left} style={{ background: borderColor }} />
+        <Handle type="source" position={Position.Right} style={{ background: borderColor }} />
+        {name}
+        {hovered && (
+          <div style={{
+            position: 'absolute',
+            bottom: 'calc(100% + 8px)',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: '#2d3748',
+            color: '#fff',
+            padding: '4px 8px',
+            borderRadius: 4,
+            fontSize: 11,
+            whiteSpace: 'nowrap',
+            zIndex: 9999,
+            pointerEvents: 'none',
+          }}>
+            클릭하여 상세 정보 표시
+          </div>
+        )}
+      </div>
+    );
+  }
 
   const cellStyle = (withRightBorder: boolean): React.CSSProperties => ({
     padding: '7px 10px',
@@ -47,14 +98,13 @@ function CpmNodeComponent({ data }: NodeProps) {
 
   return (
     <div
-      style={{ position: 'relative', width: '100%' }}
+      style={{ position: 'relative', width: '100%', cursor: detailMode ? 'default' : 'pointer' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       <Handle type="target" position={Position.Left} style={{ background: isCritical ? '#e53e3e' : '#a0aec0' }} />
       <Handle type="source" position={Position.Right} style={{ background: isCritical ? '#e53e3e' : '#a0aec0' }} />
 
-      {/* 상단: ES | DR | EF */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderBottom: `1px solid ${dividerColor}` }}>
         <div style={cellStyle(true)}>
           <div style={labelStyle}>ES</div>
@@ -70,12 +120,10 @@ function CpmNodeComponent({ data }: NodeProps) {
         </div>
       </div>
 
-      {/* 중단: 작업명 */}
       <div style={{ padding: '10px 14px', borderBottom: `1px solid ${dividerColor}`, textAlign: 'center', fontWeight: 700, fontSize: 20, color: textColor }}>
         {name}
       </div>
 
-      {/* 하단: LS | TF | LF */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
         <div style={cellStyle(true)}>
           <div style={labelStyle}>LS</div>
@@ -91,7 +139,6 @@ function CpmNodeComponent({ data }: NodeProps) {
         </div>
       </div>
 
-      {/* 호버 툴팁 */}
       {hovered && description && (
         <div style={{
           position: 'absolute',
@@ -194,6 +241,8 @@ function buildFlowElements(result: CpmResult): { nodes: Node[]; edges: Edge[] } 
       tf: n.float,
       lf: n.lf,
       isCritical: n.isCritical,
+      isExpanded: false,
+      detailMode: false,
     },
     style: {
       background: n.isCritical ? '#fff5f5' : '#f7fafc',
@@ -218,26 +267,97 @@ function buildFlowElements(result: CpmResult): { nodes: Node[]; edges: Edge[] } 
 }
 
 export default function NetworkGraph({ result }: Props) {
-  const { nodes: flowNodes, edges: flowEdges } = buildFlowElements(result);
-  const [nodes, setNodes, onNodesChange] = useNodesState(flowNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(flowEdges);
+  const [detailMode, setDetailMode] = useState(false);
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+
+  const { nodes: baseNodes, edges: baseEdges } = useMemo(() => buildFlowElements(result), [result]);
 
   useEffect(() => {
-    const { nodes: n, edges: e } = buildFlowElements(result);
-    setNodes(n);
-    setEdges(e);
+    setExpandedNodes(new Set());
   }, [result]);
 
+  const enrichedNodes = useMemo(() =>
+    baseNodes.map(node => {
+      const isExpanded = expandedNodes.has(node.id);
+      const showDetail = detailMode || isExpanded;
+      const isCritical = (node.data as CpmNodeData).isCritical;
+      return {
+        ...node,
+        data: { ...node.data, isExpanded, detailMode },
+        style: showDetail ? {
+          background: isCritical ? '#fff5f5' : '#f7fafc',
+          border: `2px solid ${isCritical ? '#e53e3e' : '#cbd5e0'}`,
+          borderRadius: 8,
+          padding: 0,
+          width: 260,
+          overflow: 'visible',
+        } : {
+          background: 'transparent',
+          border: 'none',
+          borderRadius: 0,
+          padding: 0,
+          width: 80,
+          height: 80,
+          overflow: 'visible',
+        },
+      };
+    }),
+    [baseNodes, detailMode, expandedNodes]
+  );
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(enrichedNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(baseEdges);
+
+  useEffect(() => {
+    setNodes(enrichedNodes);
+  }, [enrichedNodes]);
+
+  useEffect(() => {
+    setEdges(baseEdges);
+  }, [baseEdges]);
+
+  const handleNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
+    if (detailMode) return;
+    setExpandedNodes(prev => {
+      const next = new Set(prev);
+      if (next.has(node.id)) next.delete(node.id);
+      else next.add(node.id);
+      return next;
+    });
+  }, [detailMode]);
+
   return (
-    <div style={{ width: '100%', height: 700, borderRadius: 8, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        nodeTypes={nodeTypes}
-        fitView
-      />
+    <div style={{ borderRadius: 8, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+      <div style={{ width: '100%', height: 700 }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          nodeTypes={nodeTypes}
+          onNodeClick={handleNodeClick}
+          fitView
+        />
+      </div>
+      <div style={{
+        padding: '10px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        borderTop: '1px solid #e2e8f0',
+        background: '#f7fafc',
+      }}>
+        <input
+          type="checkbox"
+          id="detail-mode"
+          checked={detailMode}
+          onChange={e => setDetailMode(e.target.checked)}
+          style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#4299e1' }}
+        />
+        <label htmlFor="detail-mode" style={{ cursor: 'pointer', fontSize: 14, color: '#4a5568', userSelect: 'none' }}>
+          전체 상세 정보 표시
+        </label>
+      </div>
     </div>
   );
 }
