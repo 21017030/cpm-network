@@ -1,0 +1,100 @@
+================================================================
+CPM 네트워크 생성기 - 시도했다가 롤백한 설계 결정 기록
+================================================================
+작성 기준일: 2026-05-03
+대상 파일: src/components/NetworkGraph.tsx (현재는 useCpmLayout.ts로 분리)
+================================================================
+
+
+────────────────────────────────────────────────────────────────
+[1] dagre 라이브러리를 이용한 자동 노드 배치 (2회 시도, 2회 롤백)
+────────────────────────────────────────────────────────────────
+
+▸ 커밋 이력
+  - d5fa2f6 : Replace manual layout with dagre (Sugiyama algorithm)
+  - 86d3b7b : Revert to manual layout, remove dagre
+  - fd0ec06 : Re-add dagre with detail node dimensions to prevent overlap on expand
+  - 569586b : Revert graph layout to manual topological sort algorithm
+
+▸ 시도한 이유
+  노드 간 겹침과 화살표 교차를 줄이기 위해 dagre(@dagrejs/dagre) 라이브러리의
+  Sugiyama 계층 배치 알고리즘을 도입했다.
+  설정값: rankdir='LR' (왼쪽→오른쪽), ranksep=100, nodesep=60
+
+  구현 코드 (당시):
+    const g = new dagre.graphlib.Graph();
+    g.setGraph({ rankdir: 'LR', ranksep: 100, nodesep: 60, marginx: 40, marginy: 40 });
+    result.nodes.forEach(n => g.setNode(n.id, { width: NODE_W, height: NODE_H }));
+    result.edges.forEach(e => g.setEdge(e.from, e.to));
+    dagre.layout(g);
+    // 이후 g.node(id).x, g.node(id).y 로 위치 참조
+
+▸ 롤백한 이유
+  - dagre가 배치한 노드 위치가 시각적으로 자연스럽지 않았다.
+    (노드 간격이 불균일하고, 기대와 다른 위치에 노드가 배치되는 경우 발생)
+  - 첫 롤백 후 상세 모드(260px 너비 박스)의 겹침 문제를 해결하기 위해
+    상세 노드 치수를 dagre에 전달하여 재시도했지만 결과가 여전히 마음에 들지 않아
+    2차 롤백을 결정했다.
+
+▸ 현재 방식 (유지 중)
+  수동 위상 정렬(topological sort) + barycenter Y 정렬 알고리즘을 직접 구현.
+  - 각 노드의 '계층(level)'을 BFS로 계산 → 같은 계층은 같은 열에 배치
+  - 같은 계층 내 Y 순서는 선행 노드들의 평균 Y값 기준으로 정렬 (화살표 교차 최소화)
+  - 구현 위치: src/components/useCpmLayout.ts → buildFlowElements()
+
+▸ 참고
+  dagre 패키지(@dagrejs/dagre)는 package.json에 의존성으로 남아 있으나
+  현재 코드에서 사용하지 않는다. 추후 완전히 제거해도 무방하다.
+
+
+────────────────────────────────────────────────────────────────
+[2] smoothstep(직각 라우팅) 엣지 적용 (1회 시도, 1회 롤백)
+────────────────────────────────────────────────────────────────
+
+▸ 커밋 이력
+  - ddfacc5 : Widen spacing in detail mode and use smoothstep edges
+  - 3f310cd : Revert to bezier edges, preserve positions on detail mode toggle
+
+▸ 시도한 이유
+  상세 모드(260px 너비 박스 노드)에서 화살표 선이 노드 본체와 겹쳐 보이는 문제가 있었다.
+  ReactFlow의 smoothstep 엣지 타입은 직각(수직+수평) 경로로 라우팅되어
+  노드 본체를 피해 더 명확하게 그려질 것으로 기대했다.
+
+  구현 코드 (당시):
+    edges: result.edges.map(e => ({
+      ...
+      type: detailLayout ? 'smoothstep' : undefined,  // 상세 모드만 직각 엣지 적용
+    }))
+
+▸ 롤백한 이유
+  직각 꺾임 형태의 화살표가 시각적으로 부자연스럽고 어색하다는 피드백.
+  ("더 망한 거 같은데? 왜 직각 형태로 출력해?")
+
+▸ 현재 방식 (유지 중)
+  ReactFlow 기본 엣지 타입(bezier 곡선)을 그대로 사용하되,
+  상세 모드에서 노드 간 열/행 간격을 넓혀(CIRCLE: 330×240 → DETAIL: 420×300)
+  엣지가 노드와 겹치는 빈도를 줄이는 방향으로 해결했다.
+
+  추가로, 호버 중인 노드의 zIndex를 1000으로 높여
+  툴팁이 인접 노드에 가려지지 않도록 처리했다.
+  (src/components/NetworkGraph.tsx → handleNodeMouseEnter/Leave)
+
+
+================================================================
+기타 참고: 간격/위치 관련 시행착오
+================================================================
+
+상세 모드 전환 시 노드 위치가 초기화되는 문제를 해결하는 과정에서
+여러 방식이 시도되었다.
+
+  시도 A (7bdb197): 모드별로 위치를 별도 Map에 저장
+    → 원형↔상세 전환 시 위치가 공유되지 않아 사용자가 옮긴 위치가 사라지는 문제
+
+  시도 B (e3b0c3e): 하나의 위치 상태를 두 모드가 공유
+    → 노드 크기 차이를 보정하지 않아 상세 모드에서 노드들이 서로 겹침
+
+  현재 방식 (1e0aa6c): 모드 전환 시 centroid(중심점) 기준 비율 스케일
+    전환 방향에 따라 scaleX = DETAIL_COL/CIRCLE_COL 또는 역수를 적용.
+    중심점을 기준으로 각 노드 위치를 스케일하여
+    "이동한 위치는 유지하면서 노드 크기에 맞게 간격만 보정"하는 효과를 냄.
+================================================================
