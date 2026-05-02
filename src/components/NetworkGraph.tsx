@@ -78,7 +78,7 @@ function CpmNodeComponent({ data }: NodeProps) {
           justifyContent: 'center',
           cursor: 'pointer',
           fontWeight: 700,
-          fontSize: 22,
+          fontSize: 28,
           color: textColor,
           boxSizing: 'border-box',
         }}>
@@ -115,7 +115,7 @@ function CpmNodeComponent({ data }: NodeProps) {
     textAlign: 'center',
   });
   const labelStyle: React.CSSProperties = { fontSize: 10, color: '#718096', marginBottom: 2 };
-  const valueStyle: React.CSSProperties = { fontWeight: 700, fontSize: 22, color: textColor };
+  const valueStyle: React.CSSProperties = { fontWeight: 700, fontSize: 28, color: textColor };
 
   return (
     <div
@@ -141,7 +141,7 @@ function CpmNodeComponent({ data }: NodeProps) {
         </div>
       </div>
 
-      <div style={{ padding: '10px 14px', borderBottom: `1px solid ${dividerColor}`, textAlign: 'center', fontWeight: 700, fontSize: 20, color: textColor }}>
+      <div style={{ padding: '10px 14px', borderBottom: `1px solid ${dividerColor}`, textAlign: 'center', fontWeight: 700, fontSize: 26, color: textColor }}>
         {name}
       </div>
 
@@ -370,8 +370,8 @@ export default function NetworkGraph({ result }: Props) {
   }, [detailMode]);
 
   return (
-    <div style={{ maxWidth: 1000, margin: '0 auto', borderRadius: 8, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-      <div style={{ width: '100%', height: 600 }}>
+    <div style={{ maxWidth: 1200, margin: '0 auto', borderRadius: 8, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+      <div style={{ width: '100%', height: 650 }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
