@@ -1,20 +1,36 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface Props {
-  options: string[];       // 선택 가능한 작업명 목록 (현재 행 제외)
-  selected: string[];      // 현재 선택된 선행 작업 목록
+  options: string[];
+  selected: string[];
   onChange: (selected: string[]) => void;
 }
 
-// 선행 작업을 체크박스 드롭다운으로 선택하는 컴포넌트
 export default function PredecessorSelect({ options, selected, onChange }: Props) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  // 드롭다운 위치 계산을 위해 트리거 요소 참조
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
-  // 드롭다운 외부 클릭 시 닫기
+  // 드롭다운 열릴 때 트리거 위치 기준으로 좌표 계산
+  useEffect(() => {
+    if (open && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setDropdownStyle({
+        position: 'fixed',
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+        zIndex: 9999,
+      });
+    }
+  }, [open]);
+
+  // 외부 클릭 시 닫기
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+      if (triggerRef.current && !triggerRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     }
@@ -30,25 +46,10 @@ export default function PredecessorSelect({ options, selected, onChange }: Props
     }
   };
 
-  return (
-    <div className="predecessor-select" ref={ref}>
-      {/* 선택된 항목 표시 & 드롭다운 토글 */}
-      <div className="predecessor-trigger" onClick={() => setOpen((v) => !v)}>
-        {selected.length === 0 ? (
-          <span className="placeholder">선행 작업 선택</span>
-        ) : (
-          <div className="tags">
-            {selected.map((s) => (
-              <span key={s} className="tag">{s}</span>
-            ))}
-          </div>
-        )}
-        <span className="arrow">{open ? '▲' : '▼'}</span>
-      </div>
-
-      {/* 체크박스 드롭다운 */}
-      {open && (
-        <div className="predecessor-dropdown">
+  // 드롭다운을 document.body에 Portal로 렌더링 (테이블 overflow 영향 없음)
+  const dropdown = open
+    ? createPortal(
+        <div className="predecessor-dropdown" style={dropdownStyle}>
           {options.length === 0 ? (
             <div className="dropdown-empty">선택 가능한 작업 없음</div>
           ) : (
@@ -63,8 +64,26 @@ export default function PredecessorSelect({ options, selected, onChange }: Props
               </label>
             ))
           )}
-        </div>
-      )}
+        </div>,
+        document.body
+      )
+    : null;
+
+  return (
+    <div className="predecessor-select" ref={triggerRef}>
+      <div className="predecessor-trigger" onClick={() => setOpen((v) => !v)}>
+        {selected.length === 0 ? (
+          <span className="placeholder">선행 작업 선택</span>
+        ) : (
+          <div className="tags">
+            {selected.map((s) => (
+              <span key={s} className="tag">{s}</span>
+            ))}
+          </div>
+        )}
+        <span className="arrow">{open ? '▲' : '▼'}</span>
+      </div>
+      {dropdown}
     </div>
   );
 }

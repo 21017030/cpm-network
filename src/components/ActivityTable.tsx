@@ -9,6 +9,7 @@ interface Props {
   onPredecessorsChange: (id: number, predecessors: string[]) => void;
   onDelete: (id: number) => void;
   onUnitChange: (unit: Unit) => void;
+  onLoadExample: () => void;
 }
 
 const unitLabel: Record<Unit, string> = {
@@ -17,7 +18,7 @@ const unitLabel: Record<Unit, string> = {
   week: '주',
 };
 
-export default function ActivityTable({ activities, unit, onAdd, onChange, onPredecessorsChange, onDelete, onUnitChange }: Props) {
+export default function ActivityTable({ activities, unit, onAdd, onChange, onPredecessorsChange, onDelete, onUnitChange, onLoadExample }: Props) {
   return (
     <div>
       <div className="unit-bar">
@@ -98,6 +99,7 @@ export default function ActivityTable({ activities, unit, onAdd, onChange, onPre
 
       <div className="actions">
         <button id="add-btn" onClick={onAdd}>+ 항목 추가</button>
+        <button id="example-btn" onClick={onLoadExample}>예시 불러오기</button>
       </div>
     </div>
   );
