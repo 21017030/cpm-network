@@ -139,12 +139,17 @@ export default function CpmGuide({ onBack }: Props) {
             </div>
 
             {/* 항목 설명 테이블 */}
-            <div style={{ flex: 1, minWidth: 280 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+            <div style={{ flex: 1, minWidth: 420 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', tableLayout: 'fixed' }}>
+                <colgroup>
+                  <col style={{ width: 60 }} />
+                  <col style={{ width: 170 }} />
+                  <col />
+                </colgroup>
                 <thead>
                   <tr style={{ background: '#4a90d9', color: '#fff' }}>
-                    <th style={{ padding: '10px 14px', textAlign: 'left', borderRadius: '8px 0 0 0', width: 52 }}>기호</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'left' }}>영문 명칭</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'left', borderRadius: '8px 0 0 0' }}>기호</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'left', whiteSpace: 'nowrap' }}>영문 명칭</th>
                     <th style={{ padding: '10px 14px', textAlign: 'left', borderRadius: '0 8px 0 0' }}>의미</th>
                   </tr>
                 </thead>
