@@ -6,6 +6,6 @@ export interface Activity {
   id: number;        // 각 행을 구분하는 고유 식별자
   name: string;      // 작업명 (예: A, B, C)
   description: string;  // 작업 설명 (예: 설계, 시공)
-  predecessors: string; // 선행 작업 목록 (쉼표 구분, 예: "A, B")
+  predecessors: string[]; // 선행 작업 목록
   duration: string;  // 소요 기간 (문자열로 관리 후 계산 시 숫자 변환)
 }

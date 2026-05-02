@@ -45,14 +45,11 @@ export function calculateCpm(activities: Activity[]): CpmResult {
     });
   }
 
-  // 선행 작업 관계 파싱
+  // 선행 작업 관계 설정 (배열로 직접 사용)
   const predecessorMap = new Map<string, string[]>();
   for (const act of valid) {
     const name = act.name.trim();
-    const preds = act.predecessors
-      .split(',')
-      .map((p) => p.trim())
-      .filter((p) => p && nodeMap.has(p));
+    const preds = act.predecessors.filter((p) => nodeMap.has(p));
     predecessorMap.set(name, preds);
   }
 

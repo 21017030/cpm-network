@@ -168,3 +168,87 @@ tbody td input:focus {
   border: 1px solid #e2e8f0;
   font-size: 0.95rem;
 }
+
+/* 선행 작업 드롭다운 */
+.predecessor-select {
+  position: relative;
+  width: 100%;
+}
+
+.predecessor-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  padding: 7px 10px;
+  cursor: pointer;
+  background: #fff;
+  min-height: 38px;
+  gap: 6px;
+}
+
+.predecessor-trigger:hover {
+  border-color: #4a90d9;
+}
+
+.placeholder {
+  color: #a0aec0;
+  font-size: 0.9rem;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1;
+}
+
+.tag {
+  background-color: #ebf4ff;
+  color: #2b6cb0;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.arrow {
+  font-size: 0.7rem;
+  color: #a0aec0;
+  flex-shrink: 0;
+}
+
+.predecessor-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #2d3748;
+}
+
+.dropdown-item:hover {
+  background-color: #f7fafc;
+}
+
+.dropdown-empty {
+  padding: 10px 12px;
+  font-size: 0.88rem;
+  color: #a0aec0;
+}
