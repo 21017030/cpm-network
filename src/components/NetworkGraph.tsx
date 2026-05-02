@@ -42,8 +42,8 @@ function CpmNodeComponent({ data }: NodeProps) {
     borderRight: withRightBorder ? `1px solid ${dividerColor}` : undefined,
     textAlign: 'center',
   });
-  const labelStyle: React.CSSProperties = { fontSize: 13, color: '#718096', marginBottom: 3 };
-  const valueStyle: React.CSSProperties = { fontWeight: 700, fontSize: 18, color: textColor };
+  const labelStyle: React.CSSProperties = { fontSize: 10, color: '#718096', marginBottom: 2 };
+  const valueStyle: React.CSSProperties = { fontWeight: 700, fontSize: 22, color: textColor };
 
   return (
     <div
@@ -71,7 +71,7 @@ function CpmNodeComponent({ data }: NodeProps) {
       </div>
 
       {/* 중단: 작업명 */}
-      <div style={{ padding: '10px 14px', borderBottom: `1px solid ${dividerColor}`, textAlign: 'center', fontWeight: 700, fontSize: 17, color: textColor }}>
+      <div style={{ padding: '10px 14px', borderBottom: `1px solid ${dividerColor}`, textAlign: 'center', fontWeight: 700, fontSize: 20, color: textColor }}>
         {name}
       </div>
 
