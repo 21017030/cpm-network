@@ -34,7 +34,10 @@ export default function PredecessorSelect({ options, selected, onChange }: Props
       return;
     }
     updatePosition();
-    // autoFocus 대신 preventScroll 옵션으로 스크롤 없이 포커스
+    // autoFocus를 사용하면 브라우저가 포커스된 요소를 뷰포트에 맞추기 위해
+    // 자동으로 스크롤을 이동시킨다. 이 컴포넌트는 Portal로 body에 렌더링되므로
+    // 드롭다운이 열릴 때마다 그래프 영역으로 스크롤이 튀는 문제가 발생했다.
+    // preventScroll: true 옵션으로 스크롤 이동 없이 포커스만 준다.
     requestAnimationFrame(() => searchRef.current?.focus({ preventScroll: true }));
     // capture: true 로 모든 스크롤 이벤트(테이블 내부 포함) 감지
     window.addEventListener('scroll', updatePosition, true);
