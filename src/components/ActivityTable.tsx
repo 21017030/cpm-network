@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react';
 import { Activity, Unit } from '../types';
 import PredecessorSelect from './PredecessorSelect';
 
@@ -9,7 +10,8 @@ interface Props {
   onPredecessorsChange: (id: number, predecessors: string[]) => void;
   onDelete: (id: number) => void;
   onUnitChange: (unit: Unit) => void;
-  onLoadExample: () => void;
+  examples: string[];
+  onLoadExample: (index: number) => void;
   onReset: () => void;
 }
 
@@ -18,7 +20,20 @@ const unitLabel: Record<Unit, string> = {
   week: '주',
 };
 
-export default function ActivityTable({ activities, unit, onAdd, onChange, onPredecessorsChange, onDelete, onUnitChange, onLoadExample, onReset }: Props) {
+export default function ActivityTable({ activities, unit, onAdd, onChange, onPredecessorsChange, onDelete, onUnitChange, examples, onLoadExample, onReset }: Props) {
+  const [showExamples, setShowExamples] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowExamples(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <div>
       <div className="unit-bar">
@@ -46,7 +61,6 @@ export default function ActivityTable({ activities, unit, onAdd, onChange, onPre
           </thead>
           <tbody>
             {activities.map((act) => {
-              // 현재 행 자신을 제외한 작업명 목록 (이름이 입력된 것만)
               const options = activities
                 .filter((a) => a.id !== act.id && a.name.trim())
                 .map((a) => a.name.trim());
@@ -70,7 +84,6 @@ export default function ActivityTable({ activities, unit, onAdd, onChange, onPre
                     />
                   </td>
                   <td>
-                    {/* 체크박스 드롭다운으로 선행 작업 선택 */}
                     <PredecessorSelect
                       options={options}
                       selected={act.predecessors}
@@ -98,7 +111,46 @@ export default function ActivityTable({ activities, unit, onAdd, onChange, onPre
 
       <div className="actions">
         <button id="add-btn" onClick={onAdd}>+ 항목 추가</button>
-        <button id="example-btn" onClick={onLoadExample}>예시 불러오기</button>
+
+        {/* 예시 선택 드롭다운 */}
+        <div ref={dropdownRef} style={{ position: 'relative' }}>
+          <button id="example-btn" onClick={() => setShowExamples(v => !v)}>
+            예시 불러오기 {showExamples ? '▲' : '▼'}
+          </button>
+          {showExamples && (
+            <div style={{
+              position: 'absolute',
+              top: 'calc(100% + 4px)',
+              left: 0,
+              background: '#fff',
+              border: '1px solid #cbd5e0',
+              borderRadius: 8,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+              zIndex: 100,
+              minWidth: 220,
+              overflow: 'hidden',
+            }}>
+              {examples.map((name, i) => (
+                <div
+                  key={i}
+                  onClick={() => { onLoadExample(i); setShowExamples(false); }}
+                  style={{
+                    padding: '10px 16px',
+                    cursor: 'pointer',
+                    fontSize: '0.92rem',
+                    color: '#2d3748',
+                    borderBottom: i < examples.length - 1 ? '1px solid #e2e8f0' : undefined,
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#f7fafc')}
+                  onMouseLeave={e => (e.currentTarget.style.background = '#fff')}
+                >
+                  {name}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         <button id="reset-btn" onClick={onReset}>초기화</button>
       </div>
     </div>

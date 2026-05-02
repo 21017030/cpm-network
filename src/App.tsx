@@ -28,21 +28,39 @@ const initialActivities: Activity[] = [
   { id: 3, name: '', description: '', predecessors: [], duration: '' },
 ];
 
-// 예시 데이터 (쇼핑몰 개발 프로젝트)
-const exampleActivities: Activity[] = [
-  { id: 1,  name: 'A', description: '프로젝트 요구사항 분석',   predecessors: [],         duration: '2' },
-  { id: 2,  name: 'B', description: '사용자 계정 기능 개발',     predecessors: ['A'],      duration: '6' },
-  { id: 3,  name: 'C', description: '상품 목록 조회 기능 개발',  predecessors: ['A'],      duration: '4' },
-  { id: 4,  name: 'D', description: '데이터베이스 설계 및 구축', predecessors: ['B', 'C'], duration: '2' },
-  { id: 5,  name: 'E', description: '결제 시스템 연동',          predecessors: ['D'],      duration: '4' },
-  { id: 6,  name: 'F', description: '장바구니 기능 개발',        predecessors: ['D'],      duration: '3' },
-  { id: 7,  name: 'G', description: '주문 처리 기능 개발',       predecessors: ['E'],      duration: '2' },
-  { id: 8,  name: 'H', description: '배송 추적 기능 개발',       predecessors: ['E'],      duration: '4' },
-  { id: 9,  name: 'I', description: '관리자 페이지 개발',        predecessors: ['F'],      duration: '2' },
-  { id: 10, name: 'J', description: '할인 및 쿠폰 기능 개발',   predecessors: ['F'],      duration: '1' },
-  { id: 11, name: 'K', description: '시스템 통합 테스트',        predecessors: ['G', 'H'], duration: '2' },
-  { id: 12, name: 'L', description: '보안 점검 및 최적화',       predecessors: ['I', 'K'], duration: '2' },
-  { id: 13, name: 'M', description: '최종 배포 및 운영 준비',    predecessors: ['J', 'L'], duration: '3' },
+const EXAMPLES: { name: string; activities: Activity[]; unit: Unit }[] = [
+  {
+    name: '쇼핑몰 개발 프로젝트',
+    unit: 'week',
+    activities: [
+      { id: 1,  name: 'A', description: '프로젝트 요구사항 분석',   predecessors: [],         duration: '2' },
+      { id: 2,  name: 'B', description: '사용자 계정 기능 개발',     predecessors: ['A'],      duration: '6' },
+      { id: 3,  name: 'C', description: '상품 목록 조회 기능 개발',  predecessors: ['A'],      duration: '4' },
+      { id: 4,  name: 'D', description: '데이터베이스 설계 및 구축', predecessors: ['B', 'C'], duration: '2' },
+      { id: 5,  name: 'E', description: '결제 시스템 연동',          predecessors: ['D'],      duration: '4' },
+      { id: 6,  name: 'F', description: '장바구니 기능 개발',        predecessors: ['D'],      duration: '3' },
+      { id: 7,  name: 'G', description: '주문 처리 기능 개발',       predecessors: ['E'],      duration: '2' },
+      { id: 8,  name: 'H', description: '배송 추적 기능 개발',       predecessors: ['E'],      duration: '4' },
+      { id: 9,  name: 'I', description: '관리자 페이지 개발',        predecessors: ['F'],      duration: '2' },
+      { id: 10, name: 'J', description: '할인 및 쿠폰 기능 개발',   predecessors: ['F'],      duration: '1' },
+      { id: 11, name: 'K', description: '시스템 통합 테스트',        predecessors: ['G', 'H'], duration: '2' },
+      { id: 12, name: 'L', description: '보안 점검 및 최적화',       predecessors: ['I', 'K'], duration: '2' },
+      { id: 13, name: 'M', description: '최종 배포 및 운영 준비',    predecessors: ['J', 'L'], duration: '3' },
+    ],
+  },
+  {
+    name: '소프트웨어 개발 프로젝트',
+    unit: 'day',
+    activities: [
+      { id: 1, name: 'A', description: '요구사항 분석',    predecessors: [],         duration: '5' },
+      { id: 2, name: 'B', description: '시장 조사',        predecessors: [],         duration: '4' },
+      { id: 3, name: 'C', description: '시스템 설계',      predecessors: ['A'],      duration: '6' },
+      { id: 4, name: 'D', description: '데이터베이스 설계', predecessors: ['A'],      duration: '3' },
+      { id: 5, name: 'E', description: '백엔드 개발',      predecessors: ['C', 'D'], duration: '8' },
+      { id: 6, name: 'F', description: '프론트엔드 개발',  predecessors: ['C'],      duration: '7' },
+      { id: 7, name: 'G', description: '통합 테스트',      predecessors: ['E', 'F'], duration: '4' },
+    ],
+  },
 ];
 
 export default function App() {
@@ -83,10 +101,10 @@ export default function App() {
     setResult(calculateCpm(activities));
   };
 
-  // 예시 데이터 불러오기 (단위도 '주'로 변경)
-  const handleLoadExample = () => {
-    setActivities(exampleActivities);
-    setUnit('week');
+  const handleLoadExample = (index: number) => {
+    const ex = EXAMPLES[index];
+    setActivities(ex.activities);
+    setUnit(ex.unit);
     setResult(null);
   };
 
@@ -115,6 +133,7 @@ export default function App() {
         onPredecessorsChange={handlePredecessorsChange}
         onDelete={handleDelete}
         onUnitChange={setUnit}
+        examples={EXAMPLES.map(e => e.name)}
         onLoadExample={handleLoadExample}
         onReset={handleReset}
       />
