@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ReactFlow,
   useNodesState,
@@ -7,19 +7,131 @@ import {
   Edge,
   Position,
   MarkerType,
+  Handle,
+  NodeProps,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { CpmResult } from '../cpm';
+
 interface Props {
   result: CpmResult;
 }
 
-// CPM 계산 결과를 React Flow 노드/엣지로 변환
-function buildFlowElements(result: CpmResult): { nodes: Node[]; edges: Edge[] } {
-  const COL_WIDTH = 250;
-  const ROW_HEIGHT = 180;
+type CpmNodeData = {
+  es: number;
+  dr: number;
+  ef: number;
+  name: string;
+  description: string;
+  ls: number;
+  tf: number;
+  lf: number;
+  isCritical: boolean;
+  [key: string]: unknown;
+};
 
-  // 선행/후행 관계 맵 구성
+function CpmNodeComponent({ data }: NodeProps) {
+  const [hovered, setHovered] = useState(false);
+  const { es, dr, ef, name, description, ls, tf, lf, isCritical } = data as CpmNodeData;
+
+  const dividerColor = isCritical ? '#feb2b2' : '#e2e8f0';
+  const textColor = isCritical ? '#c53030' : '#1a202c';
+
+  const cellStyle = (withRightBorder: boolean): React.CSSProperties => ({
+    padding: '7px 10px',
+    borderRight: withRightBorder ? `1px solid ${dividerColor}` : undefined,
+    textAlign: 'center',
+  });
+  const labelStyle: React.CSSProperties = { fontSize: 13, color: '#718096', marginBottom: 3 };
+  const valueStyle: React.CSSProperties = { fontWeight: 700, fontSize: 18, color: textColor };
+
+  return (
+    <div
+      style={{ position: 'relative', width: '100%' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <Handle type="target" position={Position.Left} style={{ background: isCritical ? '#e53e3e' : '#a0aec0' }} />
+      <Handle type="source" position={Position.Right} style={{ background: isCritical ? '#e53e3e' : '#a0aec0' }} />
+
+      {/* 상단: ES | DR | EF */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderBottom: `1px solid ${dividerColor}` }}>
+        <div style={cellStyle(true)}>
+          <div style={labelStyle}>ES</div>
+          <div style={valueStyle}>{es}</div>
+        </div>
+        <div style={cellStyle(true)}>
+          <div style={labelStyle}>DR</div>
+          <div style={valueStyle}>{dr}</div>
+        </div>
+        <div style={cellStyle(false)}>
+          <div style={labelStyle}>EF</div>
+          <div style={valueStyle}>{ef}</div>
+        </div>
+      </div>
+
+      {/* 중단: 작업명 */}
+      <div style={{ padding: '10px 14px', borderBottom: `1px solid ${dividerColor}`, textAlign: 'center', fontWeight: 700, fontSize: 17, color: textColor }}>
+        {name}
+      </div>
+
+      {/* 하단: LS | TF | LF */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
+        <div style={cellStyle(true)}>
+          <div style={labelStyle}>LS</div>
+          <div style={valueStyle}>{ls}</div>
+        </div>
+        <div style={cellStyle(true)}>
+          <div style={labelStyle}>TF</div>
+          <div style={valueStyle}>{tf}</div>
+        </div>
+        <div style={cellStyle(false)}>
+          <div style={labelStyle}>LF</div>
+          <div style={valueStyle}>{lf}</div>
+        </div>
+      </div>
+
+      {/* 호버 툴팁 */}
+      {hovered && description && (
+        <div style={{
+          position: 'absolute',
+          bottom: 'calc(100% + 10px)',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: '#2d3748',
+          color: '#fff',
+          padding: '7px 12px',
+          borderRadius: 6,
+          fontSize: 13,
+          whiteSpace: 'nowrap',
+          zIndex: 9999,
+          pointerEvents: 'none',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+        }}>
+          {description}
+          <div style={{
+            position: 'absolute',
+            top: '100%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0,
+            height: 0,
+            borderLeft: '6px solid transparent',
+            borderRight: '6px solid transparent',
+            borderTop: '6px solid #2d3748',
+          }} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+const nodeTypes = { cpmNode: CpmNodeComponent };
+
+function buildFlowElements(result: CpmResult): { nodes: Node[]; edges: Edge[] } {
+  const COL_WIDTH = 330;
+  const ROW_HEIGHT = 240;
+
   const successors = new Map<string, string[]>();
   const predecessors = new Map<string, string[]>();
   result.nodes.forEach((n) => { successors.set(n.id, []); predecessors.set(n.id, []); });
@@ -28,7 +140,6 @@ function buildFlowElements(result: CpmResult): { nodes: Node[]; edges: Edge[] } 
     predecessors.get(e.to)?.push(e.from);
   });
 
-  // 위상 정렬 기반 레벨 계산 (소스에서의 최장 경로)
   const level = new Map<string, number>();
   result.nodes.forEach((n) => level.set(n.id, 0));
   const inDegree = new Map<string, number>();
@@ -43,7 +154,6 @@ function buildFlowElements(result: CpmResult): { nodes: Node[]; edges: Edge[] } 
     }
   }
 
-  // 레벨별 노드 그룹화
   const levelGroups = new Map<number, string[]>();
   result.nodes.forEach((n) => {
     const lv = level.get(n.id) ?? 0;
@@ -51,7 +161,6 @@ function buildFlowElements(result: CpmResult): { nodes: Node[]; edges: Edge[] } 
     levelGroups.get(lv)!.push(n.id);
   });
 
-  // 레벨 순서대로 처리: 부모 y좌표 평균(바리센터)으로 정렬 후 수직 중앙 정렬
   const posY = new Map<string, number>();
   const maxNodes = Math.max(...[...levelGroups.values()].map((g) => g.length));
   const sortedLevels = [...levelGroups.keys()].sort((a, b) => a - b);
@@ -71,81 +180,37 @@ function buildFlowElements(result: CpmResult): { nodes: Node[]; edges: Edge[] } 
     nodeIds.forEach((id, i) => posY.set(id, offset + i * ROW_HEIGHT));
   });
 
-  const nodes: Node[] = result.nodes.map((n) => {
-    const borderColor = n.isCritical ? '#e53e3e' : '#cbd5e0';
-    const dividerColor = n.isCritical ? '#feb2b2' : '#e2e8f0';
-    const cellStyle = (withRightBorder: boolean): React.CSSProperties => ({
-      padding: '4px 6px',
-      borderRight: withRightBorder ? `1px solid ${dividerColor}` : undefined,
-      textAlign: 'center' as const,
-    });
-    const labelStyle: React.CSSProperties = { fontSize: 10, color: '#718096', marginBottom: 2 };
-    const valueStyle: React.CSSProperties = { fontWeight: 700, fontSize: 13, color: n.isCritical ? '#e53e3e' : '#2d3748' };
-    return {
-      id: n.id,
-      position: { x: (level.get(n.id) ?? 0) * COL_WIDTH, y: posY.get(n.id) ?? 0 },
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
-      style: {
-        background: n.isCritical ? '#fff5f5' : '#f7fafc',
-        border: `2px solid ${borderColor}`,
-        borderRadius: 8,
-        padding: 0,
-        width: 210,
-        overflow: 'hidden',
-      },
-      data: {
-        label: (
-          <div style={{ fontSize: 12, width: '100%' }}>
-            {/* 상단: ES | DR | EF */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderBottom: `1px solid ${dividerColor}` }}>
-              <div style={cellStyle(true)}>
-                <div style={labelStyle}>ES</div>
-                <div style={valueStyle}>{n.es}</div>
-              </div>
-              <div style={cellStyle(true)}>
-                <div style={labelStyle}>DR</div>
-                <div style={valueStyle}>{n.duration}</div>
-              </div>
-              <div style={cellStyle(false)}>
-                <div style={labelStyle}>EF</div>
-                <div style={valueStyle}>{n.ef}</div>
-              </div>
-            </div>
-            {/* 중단: 작업명 */}
-            <div style={{ padding: '6px 10px', borderBottom: `1px solid ${dividerColor}`, textAlign: 'center', fontWeight: 700, fontSize: 13, color: n.isCritical ? '#e53e3e' : '#2d3748' }}>
-              {n.name}
-              {n.description && (
-                <div style={{ fontWeight: 400, fontSize: 10, color: '#718096', marginTop: 2 }}>{n.description}</div>
-              )}
-            </div>
-            {/* 하단: LS | TF | LF */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
-              <div style={cellStyle(true)}>
-                <div style={labelStyle}>LS</div>
-                <div style={valueStyle}>{n.ls}</div>
-              </div>
-              <div style={cellStyle(true)}>
-                <div style={labelStyle}>TF</div>
-                <div style={valueStyle}>{n.float}</div>
-              </div>
-              <div style={cellStyle(false)}>
-                <div style={labelStyle}>LF</div>
-                <div style={valueStyle}>{n.lf}</div>
-              </div>
-            </div>
-          </div>
-        ),
-      },
-    };
-  });
+  const nodes: Node[] = result.nodes.map((n) => ({
+    id: n.id,
+    type: 'cpmNode',
+    position: { x: (level.get(n.id) ?? 0) * COL_WIDTH, y: posY.get(n.id) ?? 0 },
+    data: {
+      es: n.es,
+      dr: n.duration,
+      ef: n.ef,
+      name: n.name,
+      description: n.description ?? '',
+      ls: n.ls,
+      tf: n.float,
+      lf: n.lf,
+      isCritical: n.isCritical,
+    },
+    style: {
+      background: n.isCritical ? '#fff5f5' : '#f7fafc',
+      border: `2px solid ${n.isCritical ? '#e53e3e' : '#cbd5e0'}`,
+      borderRadius: 8,
+      padding: 0,
+      width: 260,
+      overflow: 'visible',
+    },
+  }));
 
   const edges: Edge[] = result.edges.map((e) => ({
     id: `${e.from}-${e.to}`,
     source: e.from,
     target: e.to,
     animated: e.isCritical,
-    style: { stroke: e.isCritical ? '#e53e3e' : '#a0aec0', strokeWidth: e.isCritical ? 2 : 1 },
+    style: { stroke: e.isCritical ? '#e53e3e' : '#a0aec0', strokeWidth: e.isCritical ? 2.5 : 1.5 },
     markerEnd: { type: MarkerType.ArrowClosed, color: e.isCritical ? '#e53e3e' : '#a0aec0' },
   }));
 
@@ -157,7 +222,6 @@ export default function NetworkGraph({ result }: Props) {
   const [nodes, setNodes, onNodesChange] = useNodesState(flowNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(flowEdges);
 
-  // 계산 결과가 바뀌면 그래프 갱신
   useEffect(() => {
     const { nodes: n, edges: e } = buildFlowElements(result);
     setNodes(n);
@@ -165,12 +229,13 @@ export default function NetworkGraph({ result }: Props) {
   }, [result]);
 
   return (
-    <div style={{ width: '100%', height: 480, borderRadius: 8, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+    <div style={{ width: '100%', height: 700, borderRadius: 8, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        nodeTypes={nodeTypes}
         fitView
       />
     </div>
