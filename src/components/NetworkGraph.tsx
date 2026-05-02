@@ -17,7 +17,7 @@ interface Props {
   unit: Unit;
 }
 
-const unitLabel: Record<Unit, string> = { hour: '시간', day: '일', week: '주' };
+const unitLabel: Record<Unit, string> = { day: '일', week: '주' };
 
 // CPM 계산 결과를 React Flow 노드/엣지로 변환
 function buildFlowElements(result: CpmResult, unit: Unit): { nodes: Node[]; edges: Edge[] } {

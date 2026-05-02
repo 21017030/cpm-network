@@ -13,7 +13,6 @@ interface Props {
 }
 
 const unitLabel: Record<Unit, string> = {
-  hour: '시간',
   day: '일',
   week: '주',
 };
@@ -28,7 +27,6 @@ export default function ActivityTable({ activities, unit, onAdd, onChange, onPre
           value={unit}
           onChange={(e) => onUnitChange(e.target.value as Unit)}
         >
-          <option value="hour">시간</option>
           <option value="day">일</option>
           <option value="week">주</option>
         </select>

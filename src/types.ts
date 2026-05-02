@@ -1,5 +1,5 @@
-// 소요 기간의 시간 단위: 시간 / 일 / 주
-export type Unit = 'hour' | 'day' | 'week';
+// 소요 기간의 시간 단위: 일 / 주
+export type Unit = 'day' | 'week';
 
 // 작업(Activity) 하나를 나타내는 데이터 구조
 export interface Activity {
