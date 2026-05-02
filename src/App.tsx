@@ -185,7 +185,7 @@ export default function App() {
       {result && (
         <>
           <div ref={graphRef} className="result-summary">
-            <span>전체 프로젝트 기간: <strong>{result.projectDuration}{unit === 'day' ? '일' : '주'}</strong></span>
+            <span>최소 프로젝트 완료 기간: <strong>{result.projectDuration}{unit === 'day' ? '일' : '주'}</strong></span>
             <span>임계 경로: <strong style={{ color: '#e53e3e' }}>{result.nodes.filter((n) => n.isCritical).map((n) => n.name).join(' → ')}</strong></span>
           </div>
           <NetworkGraph result={result} />

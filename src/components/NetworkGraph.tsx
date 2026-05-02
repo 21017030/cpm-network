@@ -404,6 +404,14 @@ export default function NetworkGraph({ result }: Props) {
     });
   }, [detailMode]);
 
+  const handleNodeMouseEnter = useCallback((_: React.MouseEvent, node: Node) => {
+    setNodes(nds => nds.map(n => n.id === node.id ? { ...n, zIndex: 1000 } : n));
+  }, [setNodes]);
+
+  const handleNodeMouseLeave = useCallback((_: React.MouseEvent, node: Node) => {
+    setNodes(nds => nds.map(n => n.id === node.id ? { ...n, zIndex: 0 } : n));
+  }, [setNodes]);
+
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', borderRadius: 8, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
       <div style={{ width: '100%', height: 650, position: 'relative' }}>
@@ -414,6 +422,8 @@ export default function NetworkGraph({ result }: Props) {
           onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
           onNodeClick={handleNodeClick}
+          onNodeMouseEnter={handleNodeMouseEnter}
+          onNodeMouseLeave={handleNodeMouseLeave}
           onInit={setRfInstance}
           minZoom={0.1}
           fitView
