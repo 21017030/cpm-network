@@ -41,7 +41,7 @@ function CpmNodeComponent({ data }: NodeProps) {
   const { es, dr, ef, name, description, ls, tf, lf, isCritical, isExpanded, detailMode } = data as CpmNodeData;
 
   const showDetail = detailMode || isExpanded;
-  const dividerColor = isCritical ? '#feb2b2' : '#e2e8f0';
+  const dividerColor = isCritical ? '#f87171' : '#94a3b8';
   const textColor = isCritical ? '#c53030' : '#1a202c';
   const borderColor = isCritical ? '#e53e3e' : '#a0aec0';
 
@@ -288,7 +288,7 @@ function buildFlowElements(result: CpmResult): { nodes: Node[]; edges: Edge[] } 
     target: e.to,
     animated: e.isCritical,
     style: { stroke: e.isCritical ? '#e53e3e' : '#a0aec0', strokeWidth: e.isCritical ? 2.5 : 1.5 },
-    markerEnd: { type: MarkerType.ArrowClosed, color: e.isCritical ? '#e53e3e' : '#a0aec0' },
+    markerEnd: { type: MarkerType.ArrowClosed, color: e.isCritical ? '#e53e3e' : '#a0aec0', width: 18, height: 18 },
   }));
 
   return { nodes, edges };
