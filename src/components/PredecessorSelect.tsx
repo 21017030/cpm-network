@@ -12,6 +12,7 @@ export default function PredecessorSelect({ options, selected, onChange }: Props
   const [search, setSearch] = useState('');
   const triggerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
   const updatePosition = useCallback(() => {
@@ -33,6 +34,8 @@ export default function PredecessorSelect({ options, selected, onChange }: Props
       return;
     }
     updatePosition();
+    // autoFocus 대신 preventScroll 옵션으로 스크롤 없이 포커스
+    requestAnimationFrame(() => searchRef.current?.focus({ preventScroll: true }));
     // capture: true 로 모든 스크롤 이벤트(테이블 내부 포함) 감지
     window.addEventListener('scroll', updatePosition, true);
     window.addEventListener('resize', updatePosition);
@@ -70,7 +73,7 @@ export default function PredecessorSelect({ options, selected, onChange }: Props
         <div ref={dropdownRef} className="predecessor-dropdown" style={dropdownStyle}>
           <div style={{ padding: '6px 8px', borderBottom: '1px solid #e2e8f0' }}>
             <input
-              autoFocus
+              ref={searchRef}
               type="text"
               placeholder="검색..."
               value={search}
