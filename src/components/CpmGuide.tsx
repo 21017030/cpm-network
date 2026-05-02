@@ -139,12 +139,12 @@ export default function CpmGuide({ onBack }: Props) {
             </div>
 
             {/* 항목 설명 테이블 */}
-            <div style={{ flex: 1, minWidth: 620 }}>
+            <div style={{ flex: 1, minWidth: 420 }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', tableLayout: 'fixed' }}>
                 <colgroup>
-                  <col style={{ width: 60 }} />
-                  <col style={{ width: 170 }} />
-                  <col />
+                  <col style={{ width: 55 }} />
+                  <col style={{ width: 140 }} />
+                  <col style={{ width: '62%' }} />
                 </colgroup>
                 <thead>
                   <tr style={{ background: '#4a90d9', color: '#fff' }}>
