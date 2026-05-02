@@ -1,3 +1,14 @@
+// ─────────────────────────────────────────────
+// CPM 네트워크 그래프 컴포넌트
+//
+// 역할:
+//   - useCpmLayout 훅으로 노드/엣지 상태를 받아 ReactFlow로 렌더링
+//   - 원형 ↔ 상세 모드 전환 (전체 상세 보기 체크박스)
+//   - 원형 모드에서 노드 클릭 시 개별 상세 보기 토글
+//   - 호버 중인 노드의 zIndex를 높여 툴팁이 다른 노드에 가려지지 않도록 처리
+//   - 중앙으로 / 위치 초기화 / 도움말 버튼 제공
+// ─────────────────────────────────────────────
+
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   ReactFlow,
@@ -14,17 +25,25 @@ interface Props {
 }
 
 export default function NetworkGraph({ result }: Props) {
+  // 전체 상세 보기 모드 (체크박스)
   const [detailMode, setDetailMode] = useState(false);
+  // 원형 모드에서 개별 클릭으로 확장된 노드 ID 집합
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+  // fitView 등 ReactFlow 인스턴스 메서드 호출용
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
+  // 도움말 패널 표시 여부
   const [showLegend, setShowLegend] = useState(false);
 
+  // 레이아웃 계산 및 노드/엣지 상태 관리를 훅에 위임
   const { nodes, setNodes, onNodesChange, edges, onEdgesChange, resetPositions } = useCpmLayout(result, detailMode, expandedNodes);
 
+  // 새 계산 결과가 들어오면 개별 확장 상태 초기화
   useEffect(() => {
     setExpandedNodes(new Set());
   }, [result]);
 
+  // 원형 모드에서 노드 클릭: 해당 노드의 상세 보기를 토글
+  // 전체 상세 보기(detailMode)가 켜져 있으면 개별 클릭은 무시
   const handleNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
     if (detailMode) return;
     setExpandedNodes(prev => {
@@ -35,6 +54,7 @@ export default function NetworkGraph({ result }: Props) {
     });
   }, [detailMode]);
 
+  // 노드 호버 시 zIndex를 높여 툴팁이 인접 노드 위에 표시되도록 함
   const handleNodeMouseEnter = useCallback((_: React.MouseEvent, node: Node) => {
     setNodes(nds => nds.map(n => n.id === node.id ? { ...n, zIndex: 1000 } : n));
   }, [setNodes]);
@@ -60,6 +80,7 @@ export default function NetworkGraph({ result }: Props) {
           fitView
         />
 
+        {/* 도움말 패널: 우측 하단에 오버레이로 표시 */}
         {showLegend && (
           <div style={{
             position: 'absolute', bottom: 12, right: 12,
@@ -69,6 +90,7 @@ export default function NetworkGraph({ result }: Props) {
           }}>
             <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16, borderBottom: '1px solid #e2e8f0', paddingBottom: 10 }}>도움말</div>
 
+            {/* 원형 노드 설명 */}
             <div style={{ marginBottom: 18 }}>
               <div style={{ fontWeight: 600, fontSize: 13, color: '#718096', marginBottom: 12 }}>원형 노드</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
@@ -83,9 +105,11 @@ export default function NetworkGraph({ result }: Props) {
               </div>
             </div>
 
+            {/* 상세 노드 설명 */}
             <div>
               <div style={{ fontWeight: 600, fontSize: 13, color: '#718096', marginBottom: 12 }}>상세 노드 (클릭하여 확인)</div>
               <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+                {/* 미니 노드 다이어그램 */}
                 <div style={{ border: '2px solid #cbd5e0', borderRadius: 6, background: '#f7fafc', flexShrink: 0, width: 150 }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderBottom: '1px solid #e2e8f0' }}>
                     {['ES', 'DR', 'EF'].map((lbl, i) => (
@@ -103,6 +127,7 @@ export default function NetworkGraph({ result }: Props) {
                     ))}
                   </div>
                 </div>
+                {/* 항목별 약어 설명 */}
                 <div style={{ fontSize: 12, lineHeight: 1.6, color: '#4a5568' }}>
                   {[
                     ['ES', 'Earliest Start',  '최초 착수 시간'],
@@ -128,6 +153,7 @@ export default function NetworkGraph({ result }: Props) {
         )}
       </div>
 
+      {/* 하단 컨트롤 바 */}
       <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8, borderTop: '1px solid #e2e8f0', background: '#f7fafc' }}>
         <input
           type="checkbox"
@@ -140,12 +166,14 @@ export default function NetworkGraph({ result }: Props) {
           전체 상세 정보 표시
         </label>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+          {/* 그래프를 화면 중앙에 맞추기 */}
           <button
             onClick={() => rfInstance?.fitView({ duration: 400 })}
             style={{ padding: '4px 12px', fontSize: 13, color: '#4a5568', background: '#fff', border: '1px solid #cbd5e0', borderRadius: 6, cursor: 'pointer' }}
           >
             중앙으로
           </button>
+          {/* 드래그로 이동시킨 노드 위치를 초기 레이아웃으로 복원 */}
           <button
             onClick={resetPositions}
             style={{ padding: '4px 12px', fontSize: 13, color: '#4a5568', background: '#fff', border: '1px solid #cbd5e0', borderRadius: 6, cursor: 'pointer' }}

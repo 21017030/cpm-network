@@ -1,3 +1,10 @@
+// ─────────────────────────────────────────────
+// 작업 입력 테이블 컴포넌트
+//
+// 사용자가 작업명, 설명, 선행 작업, 소요 기간을 입력하는 테이블과
+// 항목 추가 / 예시 불러오기 / 초기화 버튼을 포함한다.
+// ─────────────────────────────────────────────
+
 import { useState, useRef, useEffect } from 'react';
 import { Activity, Unit } from '../types';
 import PredecessorSelect from './PredecessorSelect';
@@ -15,15 +22,18 @@ interface Props {
   onReset: () => void;
 }
 
+// 시간 단위 select에 표시할 한글 레이블
 const unitLabel: Record<Unit, string> = {
   day: '일',
   week: '주',
 };
 
 export default function ActivityTable({ activities, unit, onAdd, onChange, onPredecessorsChange, onDelete, onUnitChange, examples, onLoadExample, onReset }: Props) {
+  // 예시 선택 드롭다운 열림 여부
   const [showExamples, setShowExamples] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // 드롭다운 바깥 클릭 시 닫기
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -36,6 +46,7 @@ export default function ActivityTable({ activities, unit, onAdd, onChange, onPre
 
   return (
     <div>
+      {/* 시간 단위 선택 (일/주) */}
       <div className="unit-bar">
         <label htmlFor="global-unit">시간 단위</label>
         <select
@@ -61,6 +72,7 @@ export default function ActivityTable({ activities, unit, onAdd, onChange, onPre
           </thead>
           <tbody>
             {activities.map((act) => {
+              // 자기 자신을 제외한 이름이 있는 작업만 선행 작업 후보로 제공
               const options = activities
                 .filter((a) => a.id !== act.id && a.name.trim())
                 .map((a) => a.name.trim());
@@ -112,7 +124,7 @@ export default function ActivityTable({ activities, unit, onAdd, onChange, onPre
       <div className="actions">
         <button id="add-btn" onClick={onAdd}>+ 항목 추가</button>
 
-        {/* 예시 선택 드롭다운 */}
+        {/* 예시 선택 드롭다운: position: relative 기준으로 아래에 펼쳐진다 */}
         <div ref={dropdownRef} style={{ position: 'relative' }}>
           <button id="example-btn" onClick={() => setShowExamples(v => !v)}>
             예시 불러오기 {showExamples ? '▲' : '▼'}

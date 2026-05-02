@@ -1,30 +1,45 @@
+// ─────────────────────────────────────────────
+// CPM 노드 컴포넌트
+//
+// 하나의 작업 노드를 두 가지 모드로 렌더링한다.
+//   - 원형 모드 (기본): 작업명과 소요 기간만 표시. 클릭하면 상세 모드로 전환.
+//   - 상세 모드: ES/DR/EF / 작업명 / LS/TF/LF 6칸 박스로 표시.
+//     전체 상세 보기(detailMode) 또는 개별 클릭(isExpanded)으로 활성화된다.
+//
+// 임계 경로 노드는 빨간색, 일반 노드는 파란색 계열로 강조된다.
+// ─────────────────────────────────────────────
+
 import React, { useState } from 'react';
 import { NodeProps, Position, Handle } from '@xyflow/react';
 
+// ReactFlow 노드의 data 필드 타입.
+// CPM 계산 결과값과 표시 모드 플래그를 함께 담는다.
 export type CpmNodeData = {
-  es: number;
-  dr: number;
-  ef: number;
-  name: string;
-  description: string;
-  ls: number;
-  tf: number;
-  lf: number;
-  isCritical: boolean;
-  isExpanded: boolean;
-  detailMode: boolean;
-  [key: string]: unknown;
+  es: number;          // Earliest Start
+  dr: number;          // Duration
+  ef: number;          // Earliest Finish
+  name: string;        // 작업명
+  description: string; // 작업 설명 (상세 모드 호버 시 툴팁으로 표시)
+  ls: number;          // Latest Start
+  tf: number;          // Total Float
+  lf: number;          // Latest Finish
+  isCritical: boolean; // 임계 경로 여부
+  isExpanded: boolean; // 개별 클릭으로 상세 모드가 된 경우
+  detailMode: boolean; // 전체 상세 보기 모드가 켜진 경우
+  [key: string]: unknown; // ReactFlow NodeData 인덱스 시그니처 요구 사항
 };
 
 export function CpmNodeComponent({ data }: NodeProps) {
   const [hovered, setHovered] = useState(false);
   const { es, dr, ef, name, description, ls, tf, lf, isCritical, isExpanded, detailMode } = data as CpmNodeData;
 
-  const showDetail = detailMode || isExpanded;
+  // 둘 중 하나라도 true이면 상세 박스로 렌더링
+  const showDetail   = detailMode || isExpanded;
   const dividerColor = isCritical ? '#f87171' : '#94a3b8';
-  const textColor = isCritical ? '#c53030' : '#1a202c';
-  const borderColor = isCritical ? '#e53e3e' : '#a0aec0';
+  const textColor    = isCritical ? '#c53030' : '#1a202c';
+  const borderColor  = isCritical ? '#e53e3e' : '#a0aec0';
 
+  // ── 원형 노드 ──────────────────────────────
   if (!showDetail) {
     return (
       <div
@@ -32,6 +47,7 @@ export function CpmNodeComponent({ data }: NodeProps) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
+        {/* 소요 기간: 원 바깥 위쪽에 표시 */}
         <div style={{
           position: 'absolute',
           bottom: 'calc(100% + 5px)',
@@ -46,6 +62,7 @@ export function CpmNodeComponent({ data }: NodeProps) {
           {dr}
         </div>
 
+        {/* 원형 본체: 작업명 표시 */}
         <div style={{
           width: '100%',
           height: '100%',
@@ -61,11 +78,12 @@ export function CpmNodeComponent({ data }: NodeProps) {
           color: textColor,
           boxSizing: 'border-box',
         }}>
-          <Handle type="target" position={Position.Left} style={{ background: borderColor }} />
+          <Handle type="target" position={Position.Left}  style={{ background: borderColor }} />
           <Handle type="source" position={Position.Right} style={{ background: borderColor }} />
           {name}
         </div>
 
+        {/* 호버 시 안내 툴팁 */}
         {hovered && (
           <div style={{
             position: 'absolute',
@@ -88,6 +106,7 @@ export function CpmNodeComponent({ data }: NodeProps) {
     );
   }
 
+  // ── 상세 박스 노드 ──────────────────────────
   const cellStyle = (withRightBorder: boolean): React.CSSProperties => ({
     padding: '7px 10px',
     borderRight: withRightBorder ? `1px solid ${dividerColor}` : undefined,
@@ -102,9 +121,10 @@ export function CpmNodeComponent({ data }: NodeProps) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <Handle type="target" position={Position.Left} style={{ background: isCritical ? '#e53e3e' : '#a0aec0' }} />
+      <Handle type="target" position={Position.Left}  style={{ background: isCritical ? '#e53e3e' : '#a0aec0' }} />
       <Handle type="source" position={Position.Right} style={{ background: isCritical ? '#e53e3e' : '#a0aec0' }} />
 
+      {/* 상단 행: ES / DR / EF */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderBottom: `1px solid ${dividerColor}` }}>
         <div style={cellStyle(true)}>
           <div style={labelStyle}>ES</div>
@@ -120,10 +140,12 @@ export function CpmNodeComponent({ data }: NodeProps) {
         </div>
       </div>
 
+      {/* 중간 행: 작업명 */}
       <div style={{ padding: '10px 14px', borderBottom: `1px solid ${dividerColor}`, textAlign: 'center', fontWeight: 700, fontSize: 32, color: textColor }}>
         {name}
       </div>
 
+      {/* 하단 행: LS / TF / LF */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
         <div style={cellStyle(true)}>
           <div style={labelStyle}>LS</div>
@@ -139,6 +161,7 @@ export function CpmNodeComponent({ data }: NodeProps) {
         </div>
       </div>
 
+      {/* 호버 시 작업 설명 툴팁 (description이 있을 때만 표시) */}
       {hovered && description && (
         <div style={{
           position: 'absolute',
@@ -156,6 +179,7 @@ export function CpmNodeComponent({ data }: NodeProps) {
           boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
         }}>
           {description}
+          {/* 말풍선 꼬리 삼각형 */}
           <div style={{
             position: 'absolute',
             top: '100%',
@@ -173,4 +197,5 @@ export function CpmNodeComponent({ data }: NodeProps) {
   );
 }
 
+// ReactFlow에 커스텀 노드 타입을 등록하는 맵
 export const nodeTypes = { cpmNode: CpmNodeComponent };
