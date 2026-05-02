@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import {
   ReactFlow,
   useNodesState,
@@ -197,10 +197,14 @@ function CpmNodeComponent({ data }: NodeProps) {
 
 const nodeTypes = { cpmNode: CpmNodeComponent };
 
+const CIRCLE_COL = 330;
+const DETAIL_COL  = 420;
+const CIRCLE_ROW  = 240;
+const DETAIL_ROW  = 300;
+
 function buildFlowElements(result: CpmResult, detailLayout = false): { nodes: Node[]; edges: Edge[] } {
-  // 상세 모드에서는 260px 너비 노드가 서로 겹치지 않도록 간격을 넓힘
-  const COL_WIDTH = detailLayout ? 420 : 330;
-  const ROW_HEIGHT = detailLayout ? 300 : 240;
+  const COL_WIDTH  = detailLayout ? DETAIL_COL : CIRCLE_COL;
+  const ROW_HEIGHT = detailLayout ? DETAIL_ROW : CIRCLE_ROW;
 
   const successors = new Map<string, string[]>();
   const predecessors = new Map<string, string[]>();
@@ -339,14 +343,42 @@ export default function NetworkGraph({ result }: Props) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(enrichedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(baseEdges);
 
+  // 모드 전환 감지용 ref
+  const prevDetailModeRef = useRef(detailMode);
+
   useEffect(() => {
+    const modeChanged = prevDetailModeRef.current !== detailMode;
+    prevDetailModeRef.current = detailMode;
+
     setNodes(prev => {
       const prevMap = new Map(prev.map(n => [n.id, n]));
       const sameGraph =
         enrichedNodes.length === prev.length &&
         enrichedNodes.every(n => prevMap.has(n.id));
-      // 새 그래프 생성 시에만 레이아웃 위치로 초기화, 그 외엔 현재 위치 공유
+
+      // 새 그래프: 현재 모드 레이아웃 위치 그대로 적용
       if (!sameGraph) return enrichedNodes;
+
+      if (modeChanged) {
+        // 모드 전환 시: 현재 위치를 간격 비율만큼 스케일해서 공유 위치 보정
+        const scaleX = detailMode ? DETAIL_COL / CIRCLE_COL : CIRCLE_COL / DETAIL_COL;
+        const scaleY = detailMode ? DETAIL_ROW / CIRCLE_ROW : CIRCLE_ROW / DETAIL_ROW;
+        const cx = prev.reduce((s, n) => s + n.position.x, 0) / prev.length;
+        const cy = prev.reduce((s, n) => s + n.position.y, 0) / prev.length;
+        return enrichedNodes.map(updated => {
+          const cur = prevMap.get(updated.id);
+          if (!cur) return updated;
+          return {
+            ...updated,
+            position: {
+              x: cx + (cur.position.x - cx) * scaleX,
+              y: cy + (cur.position.y - cy) * scaleY,
+            },
+          };
+        });
+      }
+
+      // 같은 모드 (expand/collapse 등): data·style만 교체, 위치 유지
       return enrichedNodes.map(updated => ({
         ...updated,
         position: prevMap.get(updated.id)?.position ?? updated.position,
