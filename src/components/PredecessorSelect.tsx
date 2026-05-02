@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 
 interface Props {
@@ -9,13 +9,13 @@ interface Props {
 
 export default function PredecessorSelect({ options, selected, onChange }: Props) {
   const [open, setOpen] = useState(false);
-  // 드롭다운 위치 계산을 위해 트리거 요소 참조
+  const [search, setSearch] = useState('');
   const triggerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
-  // 드롭다운 열릴 때 트리거 위치 기준으로 좌표 계산
-  useEffect(() => {
-    if (open && triggerRef.current) {
+  const updatePosition = useCallback(() => {
+    if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       setDropdownStyle({
         position: 'fixed',
@@ -25,35 +25,73 @@ export default function PredecessorSelect({ options, selected, onChange }: Props
         zIndex: 9999,
       });
     }
-  }, [open]);
+  }, []);
 
-  // 외부 클릭 시 닫기
+  useEffect(() => {
+    if (!open) {
+      setSearch('');
+      return;
+    }
+    updatePosition();
+    // capture: true 로 모든 스크롤 이벤트(테이블 내부 포함) 감지
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [open, updatePosition]);
+
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (triggerRef.current && !triggerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      const target = e.target as Node;
+      const insideTrigger = triggerRef.current?.contains(target);
+      const insideDropdown = dropdownRef.current?.contains(target);
+      if (!insideTrigger && !insideDropdown) setOpen(false);
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const toggle = (name: string) => {
-    if (selected.includes(name)) {
-      onChange(selected.filter((s) => s !== name));
-    } else {
-      onChange([...selected, name]);
-    }
+    onChange(
+      selected.includes(name)
+        ? selected.filter((s) => s !== name)
+        : [...selected, name]
+    );
   };
 
-  // 드롭다운을 document.body에 Portal로 렌더링 (테이블 overflow 영향 없음)
+  const filtered = options.filter((name) =>
+    name.toLowerCase().includes(search.toLowerCase())
+  );
+
   const dropdown = open
     ? createPortal(
-        <div className="predecessor-dropdown" style={dropdownStyle}>
-          {options.length === 0 ? (
-            <div className="dropdown-empty">선택 가능한 작업 없음</div>
+        <div ref={dropdownRef} className="predecessor-dropdown" style={dropdownStyle}>
+          <div style={{ padding: '6px 8px', borderBottom: '1px solid #e2e8f0' }}>
+            <input
+              autoFocus
+              type="text"
+              placeholder="검색..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{
+                width: '100%',
+                border: '1px solid #cbd5e0',
+                borderRadius: 4,
+                padding: '5px 8px',
+                fontSize: '0.88rem',
+                outline: 'none',
+                color: '#2d3748',
+              }}
+            />
+          </div>
+          {filtered.length === 0 ? (
+            <div className="dropdown-empty">
+              {options.length === 0 ? '선택 가능한 작업 없음' : '검색 결과 없음'}
+            </div>
           ) : (
-            options.map((name) => (
+            filtered.map((name) => (
               <label key={name} className="dropdown-item">
                 <input
                   type="checkbox"
