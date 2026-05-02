@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import {
   ReactFlow,
   useNodesState,
@@ -339,15 +339,50 @@ export default function NetworkGraph({ result }: Props) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(enrichedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(baseEdges);
 
+  // 모드별 사용자 드래그 위치를 따로 보관
+  const prevDetailModeRef = useRef(detailMode);
+  const savedPositions = useRef<{
+    circle: Map<string, { x: number; y: number }>;
+    detail: Map<string, { x: number; y: number }>;
+  }>({ circle: new Map(), detail: new Map() });
+
   useEffect(() => {
+    const modeChanged = prevDetailModeRef.current !== detailMode;
+    prevDetailModeRef.current = detailMode;
+
     setNodes(prev => {
       const prevMap = new Map(prev.map(n => [n.id, n]));
       const sameGraph =
         enrichedNodes.length === prev.length &&
         enrichedNodes.every(n => prevMap.has(n.id));
-      // result가 바뀌어 노드 구성이 달라진 경우에만 위치까지 완전 초기화
-      if (!sameGraph) return enrichedNodes;
-      // 상세 모드 전환 / expand 등은 data·style만 교체하고 위치는 현재 상태 유지
+
+      if (!sameGraph) {
+        // 새 그래프: 저장 위치 초기화 후 레이아웃 위치 적용
+        savedPositions.current.circle = new Map();
+        savedPositions.current.detail = new Map();
+        return enrichedNodes;
+      }
+
+      if (modeChanged) {
+        // 떠나는 모드의 현재 위치 저장
+        const leavingKey = detailMode ? 'circle' : 'detail';
+        prev.forEach(n => savedPositions.current[leavingKey].set(n.id, n.position));
+
+        // 진입하는 모드의 저장 위치 적용 (없으면 레이아웃 기본 위치로 폴백)
+        const enteringKey = detailMode ? 'detail' : 'circle';
+        const fallbackMap = new Map(
+          (detailMode ? detailNodes : circleNodes).map(n => [n.id, n.position])
+        );
+        return enrichedNodes.map(updated => ({
+          ...updated,
+          position:
+            savedPositions.current[enteringKey].get(updated.id) ??
+            fallbackMap.get(updated.id) ??
+            updated.position,
+        }));
+      }
+
+      // 같은 모드 (expand/collapse 등): data·style만 교체, 위치 유지
       return enrichedNodes.map(updated => ({
         ...updated,
         position: prevMap.get(updated.id)?.position ?? updated.position,
@@ -360,6 +395,8 @@ export default function NetworkGraph({ result }: Props) {
   }, [baseEdges]);
 
   const handleResetPositions = useCallback(() => {
+    savedPositions.current.circle = new Map();
+    savedPositions.current.detail = new Map();
     setNodes(enrichedNodes);
   }, [enrichedNodes, setNodes]);
 
