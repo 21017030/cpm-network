@@ -58,7 +58,7 @@ function CpmNodeComponent({ data }: NodeProps) {
           bottom: 'calc(100% + 5px)',
           left: '50%',
           transform: 'translateX(-50%)',
-          fontSize: 20,
+          fontSize: 26,
           fontWeight: 600,
           color: textColor,
           whiteSpace: 'nowrap',
@@ -79,7 +79,7 @@ function CpmNodeComponent({ data }: NodeProps) {
           justifyContent: 'center',
           cursor: 'pointer',
           fontWeight: 700,
-          fontSize: 28,
+          fontSize: 34,
           color: textColor,
           boxSizing: 'border-box',
         }}>
@@ -98,7 +98,7 @@ function CpmNodeComponent({ data }: NodeProps) {
             color: '#fff',
             padding: '4px 8px',
             borderRadius: 4,
-            fontSize: 11,
+            fontSize: 21,
             whiteSpace: 'nowrap',
             zIndex: 9999,
             pointerEvents: 'none',
@@ -116,7 +116,7 @@ function CpmNodeComponent({ data }: NodeProps) {
     textAlign: 'center',
   });
   const labelStyle: React.CSSProperties = { fontSize: 10, color: '#718096', marginBottom: 2 };
-  const valueStyle: React.CSSProperties = { fontWeight: 700, fontSize: 28, color: textColor };
+  const valueStyle: React.CSSProperties = { fontWeight: 700, fontSize: 34, color: textColor };
 
   return (
     <div
@@ -142,7 +142,7 @@ function CpmNodeComponent({ data }: NodeProps) {
         </div>
       </div>
 
-      <div style={{ padding: '10px 14px', borderBottom: `1px solid ${dividerColor}`, textAlign: 'center', fontWeight: 700, fontSize: 26, color: textColor }}>
+      <div style={{ padding: '10px 14px', borderBottom: `1px solid ${dividerColor}`, textAlign: 'center', fontWeight: 700, fontSize: 32, color: textColor }}>
         {name}
       </div>
 
@@ -171,7 +171,7 @@ function CpmNodeComponent({ data }: NodeProps) {
           color: '#fff',
           padding: '7px 12px',
           borderRadius: 6,
-          fontSize: 13,
+          fontSize: 23,
           whiteSpace: 'nowrap',
           zIndex: 9999,
           pointerEvents: 'none',
@@ -445,8 +445,8 @@ export default function NetworkGraph({ result }: Props) {
                 {/* 항목 설명 */}
                 <div style={{ fontSize: 12, lineHeight: 1.6, color: '#4a5568' }}>
                   {[
-                    ['ES', 'Earliest Start', '최조 착수 시간'],
-                    ['EF', 'Earliest Finish', '최조 완료 시간'],
+                    ['ES', 'Earliest Start', '최초 착수 시간'],
+                    ['EF', 'Earliest Finish', '최초 완료 시간'],
                     ['DR', 'Duration', '작업 소요 시간'],
                     ['LS', 'Latest Start', '최종 착수 가능 시간'],
                     ['LF', 'Latest Finish', '최종 완료 가능 시간'],
