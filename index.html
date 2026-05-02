@@ -11,6 +11,14 @@
     <h1>CPM 네트워크</h1>
     <p class="subtitle">작업 정보를 입력하고 임계 경로를 계산하세요.</p>
 
+    <div class="unit-bar">
+      <label for="global-unit">시간 단위</label>
+      <select id="global-unit">
+        <option value="day">일</option>
+        <option value="week">주</option>
+      </select>
+    </div>
+
     <div class="table-wrapper">
       <table id="activity-table">
         <thead>
@@ -18,7 +26,7 @@
             <th>작업</th>
             <th>작업 설명</th>
             <th>선행 작업</th>
-            <th>소요 기간</th>
+            <th id="duration-header">소요 기간 (일)</th>
             <th></th>
           </tr>
         </thead>

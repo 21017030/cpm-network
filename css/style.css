@@ -85,20 +85,18 @@ tbody td input:focus {
   border-color: #4a90d9;
 }
 
-.duration-cell {
+.unit-bar {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
 }
 
-.duration-cell input {
-  flex: 1;
-  min-width: 0;
-}
-
-.unit-select {
+.unit-bar select {
   border: 1px solid #cbd5e0;
   border-radius: 6px;
-  padding: 8px 6px;
+  padding: 6px 10px;
   font-size: 0.9rem;
   color: #2d3748;
   background-color: #fff;
@@ -107,7 +105,7 @@ tbody td input:focus {
   transition: border-color 0.2s;
 }
 
-.unit-select:focus {
+.unit-bar select:focus {
   border-color: #4a90d9;
 }
 
