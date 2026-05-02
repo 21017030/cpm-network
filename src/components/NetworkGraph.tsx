@@ -65,7 +65,10 @@ function CpmNodeComponent({ data }: NodeProps) {
       >
         <Handle type="target" position={Position.Left} style={{ background: borderColor }} />
         <Handle type="source" position={Position.Right} style={{ background: borderColor }} />
-        {name}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+          <div style={{ fontSize: 11, color: '#718096', fontWeight: 400 }}>{dr}</div>
+          <div>{name}</div>
+        </div>
         {hovered && (
           <div style={{
             position: 'absolute',
