@@ -334,7 +334,7 @@ export default function NetworkGraph({ result }: Props) {
     [baseNodes, detailMode, expandedNodes]
   );
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(enrichedNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(enrichedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(baseEdges);
 
   useEffect(() => {
