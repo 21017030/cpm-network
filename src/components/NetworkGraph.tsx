@@ -57,7 +57,7 @@ function CpmNodeComponent({ data }: NodeProps) {
           bottom: 'calc(100% + 5px)',
           left: '50%',
           transform: 'translateX(-50%)',
-          fontSize: 14,
+          fontSize: 20,
           fontWeight: 600,
           color: textColor,
           whiteSpace: 'nowrap',
