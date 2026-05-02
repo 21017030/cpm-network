@@ -21,27 +21,65 @@ const unitLabel: Record<Unit, string> = { hour: '시간', day: '일', week: '주
 
 // CPM 계산 결과를 React Flow 노드/엣지로 변환
 function buildFlowElements(result: CpmResult, unit: Unit): { nodes: Node[]; edges: Edge[] } {
-  const COL_WIDTH = 220;
-  const ROW_HEIGHT = 160;
+  const COL_WIDTH = 250;
+  const ROW_HEIGHT = 180;
 
-  // 노드를 레이어(열)별로 분류 — ES 기준
-  const layerMap = new Map<string, number>();
-  // ES 값을 기준으로 레이어 결정
-  const esValues = [...new Set(result.nodes.map((n) => n.es))].sort((a, b) => a - b);
-  result.nodes.forEach((n) => {
-    layerMap.set(n.id, esValues.indexOf(n.es));
+  // 선행/후행 관계 맵 구성
+  const successors = new Map<string, string[]>();
+  const predecessors = new Map<string, string[]>();
+  result.nodes.forEach((n) => { successors.set(n.id, []); predecessors.set(n.id, []); });
+  result.edges.forEach((e) => {
+    successors.get(e.from)?.push(e.to);
+    predecessors.get(e.to)?.push(e.from);
   });
 
-  // 같은 레이어 내 노드를 행으로 배치
-  const layerCount = new Map<number, number>();
-  const nodes: Node[] = result.nodes.map((n) => {
-    const col = layerMap.get(n.id)!;
-    const row = layerCount.get(col) ?? 0;
-    layerCount.set(col, row + 1);
+  // 위상 정렬 기반 레벨 계산 (소스에서의 최장 경로)
+  const level = new Map<string, number>();
+  result.nodes.forEach((n) => level.set(n.id, 0));
+  const inDegree = new Map<string, number>();
+  result.nodes.forEach((n) => inDegree.set(n.id, (predecessors.get(n.id) || []).length));
+  const queue = result.nodes.filter((n) => (predecessors.get(n.id) || []).length === 0).map((n) => n.id);
+  while (queue.length > 0) {
+    const id = queue.shift()!;
+    for (const child of successors.get(id) || []) {
+      level.set(child, Math.max(level.get(child) ?? 0, (level.get(id) ?? 0) + 1));
+      inDegree.set(child, (inDegree.get(child) ?? 1) - 1);
+      if (inDegree.get(child) === 0) queue.push(child);
+    }
+  }
 
+  // 레벨별 노드 그룹화
+  const levelGroups = new Map<number, string[]>();
+  result.nodes.forEach((n) => {
+    const lv = level.get(n.id) ?? 0;
+    if (!levelGroups.has(lv)) levelGroups.set(lv, []);
+    levelGroups.get(lv)!.push(n.id);
+  });
+
+  // 레벨 순서대로 처리: 부모 y좌표 평균(바리센터)으로 정렬 후 수직 중앙 정렬
+  const posY = new Map<string, number>();
+  const maxNodes = Math.max(...[...levelGroups.values()].map((g) => g.length));
+  const sortedLevels = [...levelGroups.keys()].sort((a, b) => a - b);
+  sortedLevels.forEach((lv) => {
+    const nodeIds = levelGroups.get(lv)!;
+    if (lv > 0) {
+      nodeIds.sort((a, b) => {
+        const avgY = (id: string) => {
+          const preds = predecessors.get(id) || [];
+          if (preds.length === 0) return 0;
+          return preds.reduce((sum, pid) => sum + (posY.get(pid) ?? 0), 0) / preds.length;
+        };
+        return avgY(a) - avgY(b);
+      });
+    }
+    const offset = ((maxNodes - nodeIds.length) / 2) * ROW_HEIGHT;
+    nodeIds.forEach((id, i) => posY.set(id, offset + i * ROW_HEIGHT));
+  });
+
+  const nodes: Node[] = result.nodes.map((n) => {
     return {
       id: n.id,
-      position: { x: col * COL_WIDTH, y: row * ROW_HEIGHT },
+      position: { x: (level.get(n.id) ?? 0) * COL_WIDTH, y: posY.get(n.id) ?? 0 },
       sourcePosition: Position.Right,
       targetPosition: Position.Left,
       style: {
