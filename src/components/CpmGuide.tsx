@@ -520,6 +520,23 @@ export default function CpmGuide({ onBack }: Props) {
         </section>
 
       </div>
+
+      <div style={{ position: 'fixed', bottom: 28, right: 28, display: 'flex', flexDirection: 'column', gap: 8, zIndex: 1000 }}>
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          title="맨 위로"
+          style={{ background: '#4a90d9', color: '#fff', border: 'none', borderRadius: '50%', width: 44, height: 44, fontSize: 20, cursor: 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          ↑
+        </button>
+        <button
+          onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+          title="맨 아래로"
+          style={{ background: '#4a90d9', color: '#fff', border: 'none', borderRadius: '50%', width: 44, height: 44, fontSize: 20, cursor: 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          ↓
+        </button>
+      </div>
     </div>
   );
 }
