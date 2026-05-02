@@ -1,0 +1,218 @@
+================================================================
+CPM 네트워크 생성기 - 개발 중 발생한 문제 및 해결 기록
+================================================================
+작성 기준일: 2026-05-03
+================================================================
+
+
+────────────────────────────────────────────────────────────────
+[1] 선행 작업 드롭다운이 테이블 경계에 잘려 보이는 문제
+────────────────────────────────────────────────────────────────
+
+▸ 관련 커밋: aa28b3e
+
+▸ 증상
+  선행 작업 선택 드롭다운이 테이블 안에서 열릴 때,
+  테이블의 overflow:hidden 속성에 의해 드롭다운 하단이 잘려 보였다.
+
+▸ 원인
+  드롭다운이 PredecessorSelect 컴포넌트의 자식으로 렌더링되어
+  부모인 <td>와 <table>의 overflow 제약을 받음.
+
+▸ 해결
+  React의 createPortal을 사용해 드롭다운을 document.body에 직접 렌더링.
+  트리거 요소의 getBoundingClientRect()로 화면 좌표를 계산하여
+  position: fixed로 드롭다운 위치를 직접 지정.
+
+  핵심 코드:
+    createPortal(<드롭다운 JSX>, document.body)
+    // 위치는 triggerRef.current.getBoundingClientRect()로 계산
+
+
+────────────────────────────────────────────────────────────────
+[2] 드롭다운 열 때 페이지가 자동으로 스크롤되는 문제
+────────────────────────────────────────────────────────────────
+
+▸ 관련 커밋: de49344, 9d83a0f
+
+▸ 증상
+  선행 작업 드롭다운을 열면 그래프 영역 쪽으로 페이지가 갑자기 스크롤됨.
+
+▸ 원인
+  드롭다운 내 검색 input에 autoFocus 속성을 사용했는데,
+  브라우저가 포커스된 요소를 뷰포트에 맞추기 위해 자동으로 스크롤을 이동시킴.
+  드롭다운이 Portal로 body에 렌더링되어 있어 엉뚱한 위치로 스크롤됨.
+
+▸ 해결
+  autoFocus 속성 제거 후, useRef로 input을 참조하여
+  preventScroll: true 옵션으로 포커스. 스크롤 이동 없이 포커스만 줌.
+
+  핵심 코드:
+    // 변경 전
+    <input autoFocus ... />
+
+    // 변경 후
+    const searchRef = useRef<HTMLInputElement>(null);
+    requestAnimationFrame(() => searchRef.current?.focus({ preventScroll: true }));
+    <input ref={searchRef} ... />
+
+
+────────────────────────────────────────────────────────────────
+[3] 페이지 스크롤 시 드롭다운 위치가 트리거와 어긋나는 문제
+────────────────────────────────────────────────────────────────
+
+▸ 관련 커밋: 164f150
+
+▸ 증상
+  드롭다운이 열려 있는 상태에서 페이지를 스크롤하면
+  드롭다운이 트리거 버튼과 다른 위치에 고정된 채로 남아 있음.
+
+▸ 원인
+  position: fixed로 드롭다운 위치를 한 번만 계산하고 업데이트하지 않았음.
+  스크롤 이벤트가 발생해도 위치를 재계산하지 않아 어긋남.
+
+▸ 해결
+  scroll / resize 이벤트 리스너를 등록하여 드롭다운이 열려 있는 동안
+  위치를 실시간으로 재계산.
+  테이블 내부 스크롤도 감지하기 위해 capture: true 옵션 사용.
+
+  핵심 코드:
+    window.addEventListener('scroll', updatePosition, { capture: true });
+    window.addEventListener('resize', updatePosition);
+    // 드롭다운 닫힐 때 이벤트 제거
+
+
+────────────────────────────────────────────────────────────────
+[4] 노드 레이아웃 개편 후 빌드 에러 (미사용 변수)
+────────────────────────────────────────────────────────────────
+
+▸ 관련 커밋: 02a8ba3
+
+▸ 증상
+  노드 레이아웃을 ES|DR|EF / Name / LS|TF|LF 구조로 개편한 후 빌드 실패.
+  TypeScript 에러: 'unit', 'unitLabel' is declared but never read (TS6133)
+
+▸ 원인
+  NetworkGraph 컴포넌트에서 단위(unit)를 노드 내부에 직접 표시했는데,
+  새 레이아웃에서 단위 표시를 제거하면서 unit prop과 unitLabel 변수가 남겨짐.
+
+▸ 해결
+  NetworkGraph Props에서 unit 제거, unitLabel 상수 삭제,
+  App.tsx에서 NetworkGraph로 전달하던 unit prop 제거.
+
+
+────────────────────────────────────────────────────────────────
+[5] useNodesState TypeScript 제네릭 타입 에러
+────────────────────────────────────────────────────────────────
+
+▸ 관련 커밋: ef05bfd
+
+▸ 증상
+  빌드 시 useNodesState 관련 TypeScript 타입 추론 에러 발생.
+
+▸ 원인
+  useNodesState(enrichedNodes) 호출 시 제네릭 타입을 명시하지 않아
+  ReactFlow 내부 타입과 불일치 발생.
+
+▸ 해결
+  제네릭을 명시적으로 지정.
+
+  핵심 코드:
+    // 변경 전
+    const [nodes, setNodes, onNodesChange] = useNodesState(enrichedNodes);
+
+    // 변경 후
+    const [nodes, setNodes, onNodesChange] = useNodesState<Node>(enrichedNodes);
+
+
+────────────────────────────────────────────────────────────────
+[6] 가이드 페이지 노드 구조 테이블의 '의미' 열이 너무 좁은 문제
+────────────────────────────────────────────────────────────────
+
+▸ 관련 커밋: f9df7fd, b4b6ca8
+
+▸ 증상
+  CpmGuide 페이지의 네트워크 노드 구조 테이블에서
+  '의미' 열의 텍스트가 세로로 길게 줄 바꿈되어 거의 읽을 수 없는 상태.
+
+▸ 원인
+  테이블 컨테이너(flex 자식)의 minWidth가 작아 테이블 전체가 좁게 렌더링됨.
+  '기호'(55px), '영문 명칭'(140px) 컬럼이 지정되어 나머지 공간이 '의미' 열에
+  거의 남지 않음.
+
+▸ 해결
+  table에 tableLayout: 'fixed' 적용 후 <colgroup>으로 열 너비를 명시.
+  기호: 55px, 영문 명칭: 140px, 의미: 62%(너비의 대부분)
+  컨테이너 minWidth를 420px로 설정하여 테이블이 충분히 넓게 표시되도록 함.
+
+  핵심 코드:
+    <table style={{ tableLayout: 'fixed', width: '100%' }}>
+      <colgroup>
+        <col style={{ width: 55 }} />
+        <col style={{ width: 140 }} />
+        <col style={{ width: '62%' }} />
+      </colgroup>
+
+
+────────────────────────────────────────────────────────────────
+[7] 상세 모드 호버 툴팁이 인접 노드에 가려지는 문제
+────────────────────────────────────────────────────────────────
+
+▸ 관련 커밋: d9850bd
+
+▸ 증상
+  상세 모드(네모 노드)에서 노드에 마우스를 올리면 작업 설명 툴팁이 나타나는데,
+  위쪽에 다른 노드가 있으면 그 노드가 툴팁을 가려버림.
+
+▸ 원인
+  ReactFlow에서 각 노드는 독립적인 DOM 요소로 렌더링된다.
+  툴팁에 zIndex: 9999를 설정해도 다른 노드 컨테이너의 stacking context에 의해
+  가려질 수 있음. (zIndex는 같은 stacking context 내에서만 비교됨)
+
+▸ 해결
+  ReactFlow의 onNodeMouseEnter / onNodeMouseLeave 이벤트를 활용해
+  호버 중인 노드의 zIndex를 1000으로 높임.
+  노드 컨테이너 자체가 다른 노드 위로 올라가므로 툴팁도 함께 올라옴.
+
+  핵심 코드 (NetworkGraph.tsx):
+    const handleNodeMouseEnter = (_: React.MouseEvent, node: Node) => {
+      setNodes(nds => nds.map(n => n.id === node.id ? { ...n, zIndex: 1000 } : n));
+    };
+    const handleNodeMouseLeave = (_: React.MouseEvent, node: Node) => {
+      setNodes(nds => nds.map(n => n.id === node.id ? { ...n, zIndex: 0 } : n));
+    };
+
+
+────────────────────────────────────────────────────────────────
+[8] 모드 전환(원형↔상세) 시 노드 위치가 초기화되는 문제
+────────────────────────────────────────────────────────────────
+
+▸ 관련 커밋: 7bdb197 → e3b0c3e → 1e0aa6c (3차에 걸쳐 해결)
+
+▸ 증상
+  사용자가 드래그로 노드를 이동시킨 후, 원형↔상세 모드를 전환하면
+  이동한 위치가 사라지고 초기 레이아웃으로 돌아감.
+
+▸ 원인
+  모드 전환 시 baseNodes 참조가 바뀌면서 enrichedNodes가 재계산되고,
+  useEffect가 새 위치(초기값)로 노드를 덮어씀.
+
+▸ 해결 과정
+  1차 시도: 모드별로 위치를 별도 Map에 저장 → 두 모드 간 위치가 공유되지 않음
+  2차 시도: 단일 위치 상태를 두 모드가 공유 → 노드 크기 차이로 인해 노드들이 겹침
+  3차(최종): 모드 전환 시 현재 위치를 비율(scale)로 보정
+
+  최종 해결 방식:
+    - 원형→상세: 각 노드 위치를 중심점 기준으로 DETAIL/CIRCLE 비율만큼 확장
+    - 상세→원형: CIRCLE/DETAIL 비율만큼 축소
+    - expand/collapse 등 모드 변경 없이 data만 바뀌는 경우: 위치 그대로 유지
+
+  핵심 코드 (useCpmLayout.ts):
+    const scaleX = detailMode ? DETAIL_COL / CIRCLE_COL : CIRCLE_COL / DETAIL_COL;
+    const scaleY = detailMode ? DETAIL_ROW / CIRCLE_ROW : CIRCLE_ROW / DETAIL_ROW;
+    const cx = prev.reduce((s, n) => s + n.position.x, 0) / prev.length; // 중심점 X
+    const cy = prev.reduce((s, n) => s + n.position.y, 0) / prev.length; // 중심점 Y
+    // 각 노드를 중심점 기준으로 스케일
+    position: { x: cx + (cur.position.x - cx) * scaleX, ... }
+
+================================================================
