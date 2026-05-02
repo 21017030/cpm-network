@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import ActivityTable from './components/ActivityTable';
 import NetworkGraph from './components/NetworkGraph';
 import { calculateCpm, CpmResult } from './cpm';
@@ -33,6 +33,7 @@ export default function App() {
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [unit, setUnit] = useState<Unit>('day');
   const [result, setResult] = useState<CpmResult | null>(null);
+  const graphRef = useRef<HTMLDivElement>(null);
 
   const handleAdd = () => {
     setActivities((prev) => [
@@ -90,11 +91,32 @@ export default function App() {
 
       {result && (
         <>
-          <div className="result-summary">
+          <div ref={graphRef} className="result-summary">
             <span>전체 프로젝트 기간: <strong>{result.projectDuration}{unit === 'day' ? '일' : '주'}</strong></span>
             <span>임계 경로: <strong style={{ color: '#e53e3e' }}>{result.nodes.filter((n) => n.isCritical).map((n) => n.name).join(' → ')}</strong></span>
           </div>
           <NetworkGraph result={result} />
+          <button
+            onClick={() => graphRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            title="그래프로 이동"
+            style={{
+              position: 'fixed',
+              bottom: 28,
+              right: 28,
+              background: '#4a90d9',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 24,
+              padding: '10px 18px',
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+              zIndex: 1000,
+            }}
+          >
+            그래프 ↓
+          </button>
         </>
       )}
     </div>

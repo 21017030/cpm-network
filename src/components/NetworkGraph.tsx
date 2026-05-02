@@ -371,7 +371,7 @@ export default function NetworkGraph({ result }: Props) {
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', borderRadius: 8, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-      <div style={{ width: '100%', height: 650 }}>
+      <div style={{ width: '100%', height: 650, position: 'relative' }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -382,6 +382,38 @@ export default function NetworkGraph({ result }: Props) {
           minZoom={0.1}
           fitView
         />
+
+        {/* 우하단 범례 */}
+        <div style={{
+          position: 'absolute',
+          bottom: 12,
+          right: 12,
+          background: 'rgba(255,255,255,0.93)',
+          border: '1px solid #e2e8f0',
+          borderRadius: 8,
+          padding: '10px 14px',
+          fontSize: 12,
+          color: '#4a5568',
+          lineHeight: 1.7,
+          pointerEvents: 'none',
+          zIndex: 10,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        }}>
+          <div style={{ fontWeight: 700, marginBottom: 6, fontSize: 13 }}>범례</div>
+
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ fontWeight: 600, marginBottom: 2 }}>○ 원형 노드</div>
+            <div>원 위 숫자: 소요 기간</div>
+            <div>원 안 문자: 작업명</div>
+          </div>
+
+          <div>
+            <div style={{ fontWeight: 600, marginBottom: 2 }}>□ 상세 노드 (클릭 또는 전체 표시)</div>
+            <div><b>ES</b> 최조 시작일 &nbsp;·&nbsp; <b>DR</b> 소요 기간 &nbsp;·&nbsp; <b>EF</b> 최조 완료일</div>
+            <div><b>LS</b> 최지 시작일 &nbsp;·&nbsp; <b>TF</b> 여유 시간 &nbsp;·&nbsp; <b>LF</b> 최지 완료일</div>
+            <div style={{ marginTop: 4, color: '#e53e3e' }}>빨간색 노드/선: 임계 경로</div>
+          </div>
+        </div>
       </div>
       <div style={{
         padding: '10px 16px',
