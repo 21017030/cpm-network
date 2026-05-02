@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import React from 'react';
 import ActivityTable from './components/ActivityTable';
 import NetworkGraph from './components/NetworkGraph';
+import CpmGuide from './components/CpmGuide';
 import { calculateCpm, CpmResult } from './cpm';
 import { Activity, Unit } from './types';
 
@@ -90,10 +91,13 @@ const EXAMPLES: { name: string; activities: Activity[]; unit: Unit }[] = [
 ];
 
 export default function App() {
+  const [showGuide, setShowGuide] = useState(false);
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [unit, setUnit] = useState<Unit>('day');
   const [result, setResult] = useState<CpmResult | null>(null);
   const graphRef = useRef<HTMLDivElement>(null);
+
+  if (showGuide) return <CpmGuide onBack={() => setShowGuide(false)} />;
 
   const handleAdd = () => {
     setActivities((prev) => [
@@ -148,8 +152,18 @@ export default function App() {
 
   return (
     <div className="container">
-      <h1>CPM 네트워크</h1>
-      <p className="subtitle">작업 정보를 입력하고 임계 경로를 계산하세요.</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1>CPM 네트워크</h1>
+          <p className="subtitle">작업 정보를 입력하고 임계 경로를 계산하세요.</p>
+        </div>
+        <button
+          onClick={() => setShowGuide(true)}
+          style={{ background: 'none', border: 'none', color: '#4a90d9', fontSize: '0.95rem', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline', padding: '4px 0', marginTop: 6, whiteSpace: 'nowrap' }}
+        >
+          CPM이란? →
+        </button>
+      </div>
 
       <ActivityTable
         activities={activities}
