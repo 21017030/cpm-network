@@ -50,15 +50,15 @@ const EXAMPLES: { name: string; activities: Activity[]; unit: Unit }[] = [
   },
   {
     name: '소프트웨어 개발 프로젝트',
-    unit: 'day',
+    unit: 'week',
     activities: [
-      { id: 1, name: 'A', description: '요구사항 분석',    predecessors: [],         duration: '5' },
-      { id: 2, name: 'B', description: '시장 조사',        predecessors: [],         duration: '4' },
-      { id: 3, name: 'C', description: '시스템 설계',      predecessors: ['A'],      duration: '6' },
-      { id: 4, name: 'D', description: '데이터베이스 설계', predecessors: ['A'],      duration: '3' },
-      { id: 5, name: 'E', description: '백엔드 개발',      predecessors: ['C', 'D'], duration: '8' },
-      { id: 6, name: 'F', description: '프론트엔드 개발',  predecessors: ['C'],      duration: '7' },
-      { id: 7, name: 'G', description: '통합 테스트',      predecessors: ['E', 'F'], duration: '4' },
+      { id: 1, name: 'A', description: '요구사항 정의',       predecessors: [], duration: '7' },
+  { id: 2, name: 'B', description: '시장 분석',           predecessors: [], duration: '9' },
+  { id: 3, name: 'C', description: '시스템 구조 설계',     predecessors: ['A'], duration: '12' },
+  { id: 4, name: 'D', description: '데이터베이스 설계',   predecessors: ['A', 'B'], duration: '8' },
+  { id: 5, name: 'E', description: '백엔드 구현',         predecessors: ['D'], duration: '9' },
+  { id: 6, name: 'F', description: '프론트엔드 개발 및 연동', predecessors: ['C', 'E'], duration: '6' },
+  { id: 7, name: 'G', description: '기능 테스트',         predecessors: ['E'], duration: '5' },
     ],
   },
 ];
