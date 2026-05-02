@@ -10,17 +10,12 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { CpmResult } from '../cpm';
-import { Unit } from '../types';
-
 interface Props {
   result: CpmResult;
-  unit: Unit;
 }
 
-const unitLabel: Record<Unit, string> = { day: '일', week: '주' };
-
 // CPM 계산 결과를 React Flow 노드/엣지로 변환
-function buildFlowElements(result: CpmResult, unit: Unit): { nodes: Node[]; edges: Edge[] } {
+function buildFlowElements(result: CpmResult): { nodes: Node[]; edges: Edge[] } {
   const COL_WIDTH = 250;
   const ROW_HEIGHT = 180;
 
@@ -157,17 +152,17 @@ function buildFlowElements(result: CpmResult, unit: Unit): { nodes: Node[]; edge
   return { nodes, edges };
 }
 
-export default function NetworkGraph({ result, unit }: Props) {
-  const { nodes: flowNodes, edges: flowEdges } = buildFlowElements(result, unit);
+export default function NetworkGraph({ result }: Props) {
+  const { nodes: flowNodes, edges: flowEdges } = buildFlowElements(result);
   const [nodes, setNodes, onNodesChange] = useNodesState(flowNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(flowEdges);
 
   // 계산 결과가 바뀌면 그래프 갱신
   useEffect(() => {
-    const { nodes: n, edges: e } = buildFlowElements(result, unit);
+    const { nodes: n, edges: e } = buildFlowElements(result);
     setNodes(n);
     setEdges(e);
-  }, [result, unit]);
+  }, [result]);
 
   return (
     <div style={{ width: '100%', height: 480, borderRadius: 8, border: '1px solid #e2e8f0', overflow: 'hidden' }}>

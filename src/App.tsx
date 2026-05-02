@@ -94,7 +94,7 @@ export default function App() {
             <span>전체 프로젝트 기간: <strong>{result.projectDuration}{unit === 'day' ? '일' : '주'}</strong></span>
             <span>임계 경로: <strong style={{ color: '#e53e3e' }}>{result.nodes.filter((n) => n.isCritical).map((n) => n.name).join(' → ')}</strong></span>
           </div>
-          <NetworkGraph result={result} unit={unit} />
+          <NetworkGraph result={result} />
         </>
       )}
     </div>
