@@ -9,6 +9,7 @@ import {
   MarkerType,
   Handle,
   NodeProps,
+  NodeOrigin,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { CpmResult } from '../cpm';
@@ -32,6 +33,8 @@ type CpmNodeData = {
   [key: string]: unknown;
 };
 
+const NODE_ORIGIN: NodeOrigin = [0.5, 0.5];
+
 function CpmNodeComponent({ data }: NodeProps) {
   const [hovered, setHovered] = useState(false);
   const { es, dr, ef, name, description, ls, tf, lf, isCritical, isExpanded, detailMode } = data as CpmNodeData;
@@ -44,7 +47,27 @@ function CpmNodeComponent({ data }: NodeProps) {
   if (!showDetail) {
     return (
       <div
-        style={{
+        style={{ position: 'relative', width: '100%', height: '100%' }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        {/* 소요 기간 — 원 바깥 위쪽 */}
+        <div style={{
+          position: 'absolute',
+          bottom: 'calc(100% + 5px)',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: 14,
+          fontWeight: 600,
+          color: textColor,
+          whiteSpace: 'nowrap',
+          pointerEvents: 'none',
+        }}>
+          {dr}
+        </div>
+
+        {/* 원형 노드 */}
+        <div style={{
           width: '100%',
           height: '100%',
           borderRadius: '50%',
@@ -55,24 +78,19 @@ function CpmNodeComponent({ data }: NodeProps) {
           justifyContent: 'center',
           cursor: 'pointer',
           fontWeight: 700,
-          fontSize: 18,
+          fontSize: 22,
           color: textColor,
-          position: 'relative',
           boxSizing: 'border-box',
-        }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-      >
-        <Handle type="target" position={Position.Left} style={{ background: borderColor }} />
-        <Handle type="source" position={Position.Right} style={{ background: borderColor }} />
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-          <div style={{ fontSize: 11, color: '#718096', fontWeight: 400 }}>{dr}</div>
-          <div>{name}</div>
+        }}>
+          <Handle type="target" position={Position.Left} style={{ background: borderColor }} />
+          <Handle type="source" position={Position.Right} style={{ background: borderColor }} />
+          {name}
         </div>
+
         {hovered && (
           <div style={{
             position: 'absolute',
-            bottom: 'calc(100% + 8px)',
+            top: 'calc(100% + 8px)',
             left: '50%',
             transform: 'translateX(-50%)',
             background: '#2d3748',
@@ -230,10 +248,15 @@ function buildFlowElements(result: CpmResult): { nodes: Node[]; edges: Edge[] } 
     nodeIds.forEach((id, i) => posY.set(id, offset + i * ROW_HEIGHT));
   });
 
+  // position = center of the 80×80 circle (origin [0.5, 0.5] means position is the center)
   const nodes: Node[] = result.nodes.map((n) => ({
     id: n.id,
     type: 'cpmNode',
-    position: { x: (level.get(n.id) ?? 0) * COL_WIDTH, y: posY.get(n.id) ?? 0 },
+    origin: NODE_ORIGIN,
+    position: {
+      x: (level.get(n.id) ?? 0) * COL_WIDTH + 40,
+      y: (posY.get(n.id) ?? 0) + 40,
+    },
     data: {
       es: n.es,
       dr: n.duration,
@@ -248,11 +271,12 @@ function buildFlowElements(result: CpmResult): { nodes: Node[]; edges: Edge[] } 
       detailMode: false,
     },
     style: {
-      background: n.isCritical ? '#fff5f5' : '#f7fafc',
-      border: `2px solid ${n.isCritical ? '#e53e3e' : '#cbd5e0'}`,
-      borderRadius: 8,
+      background: 'transparent',
+      border: 'none',
+      borderRadius: 0,
       padding: 0,
-      width: 260,
+      width: 80,
+      height: 80,
       overflow: 'visible',
     },
   }));
