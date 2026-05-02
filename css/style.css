@@ -85,6 +85,32 @@ tbody td input:focus {
   border-color: #4a90d9;
 }
 
+.duration-cell {
+  display: flex;
+  gap: 6px;
+}
+
+.duration-cell input {
+  flex: 1;
+  min-width: 0;
+}
+
+.unit-select {
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  padding: 8px 6px;
+  font-size: 0.9rem;
+  color: #2d3748;
+  background-color: #fff;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.unit-select:focus {
+  border-color: #4a90d9;
+}
+
 .delete-btn {
   background: none;
   border: none;
