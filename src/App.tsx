@@ -61,6 +61,32 @@ const EXAMPLES: { name: string; activities: Activity[]; unit: Unit }[] = [
   { id: 7, name: 'G', description: '기능 테스트',         predecessors: ['E'], duration: '5' },
     ],
   },
+  {
+    name: '풀스택 서비스 개발 프로젝트',
+    unit: 'day',
+    activities: [
+      { id: 1,  name: 'A', description: '요구사항 정의',         predecessors: [],           duration: '3' },
+      { id: 2,  name: 'B', description: '시장 분석',             predecessors: [],           duration: '2' },
+      { id: 3,  name: 'C', description: '프로젝트 계획 수립',    predecessors: ['A'],        duration: '2' },
+      { id: 4,  name: 'D', description: '시스템 구조 설계',      predecessors: ['A'],        duration: '4' },
+      { id: 5,  name: 'E', description: 'UI/UX 설계',            predecessors: ['A', 'B'],   duration: '3' },
+      { id: 6,  name: 'F', description: '데이터베이스 설계',     predecessors: ['D'],        duration: '3' },
+      { id: 7,  name: 'G', description: '기술 스택 선정',        predecessors: ['C'],        duration: '1' },
+      { id: 8,  name: 'H', description: '개발 환경 구축',        predecessors: ['C', 'G'],   duration: '2' },
+      { id: 9,  name: 'I', description: '백엔드 구조 설계',      predecessors: ['D', 'F'],   duration: '2' },
+      { id: 10, name: 'J', description: '프론트엔드 구조 설계',  predecessors: ['D', 'E'],   duration: '2' },
+      { id: 11, name: 'K', description: '백엔드 개발',           predecessors: ['I', 'H'],   duration: '6' },
+      { id: 12, name: 'L', description: '프론트엔드 개발',       predecessors: ['J', 'H'],   duration: '5' },
+      { id: 13, name: 'M', description: 'API 개발',              predecessors: ['K'],        duration: '3' },
+      { id: 14, name: 'N', description: '화면 연동',             predecessors: ['L', 'M'],   duration: '2' },
+      { id: 15, name: 'O', description: '단위 테스트',           predecessors: ['K', 'L'],   duration: '2' },
+      { id: 16, name: 'P', description: '통합 테스트',           predecessors: ['N', 'O'],   duration: '3' },
+      { id: 17, name: 'Q', description: '성능 테스트',           predecessors: ['P'],        duration: '2' },
+      { id: 18, name: 'R', description: '보안 점검',             predecessors: ['P'],        duration: '1' },
+      { id: 19, name: 'S', description: '배포 준비',             predecessors: ['Q', 'R'],   duration: '1' },
+      { id: 20, name: 'T', description: '서비스 배포',           predecessors: ['S'],        duration: '1' },
+    ],
+  },
 ];
 
 export default function App() {
