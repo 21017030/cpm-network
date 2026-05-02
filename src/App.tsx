@@ -154,7 +154,7 @@ export default function App() {
     <div className="container">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <h1>CPM 네트워크</h1>
+          <h1>CPM 네트워크 생성기</h1>
           <p className="subtitle">작업 정보를 입력하고 임계 경로를 계산하세요.</p>
         </div>
         <button
