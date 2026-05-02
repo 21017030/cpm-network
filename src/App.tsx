@@ -75,6 +75,11 @@ export default function App() {
   };
 
   const handleCalculate = () => {
+    const valid = activities.filter(a => a.name.trim() && a.duration !== '');
+    if (valid.length === 0) {
+      alert('최소 한 개 이상의 작업을 입력해 주세요.\n작업명과 소요 기간을 입력하면 그래프를 생성할 수 있습니다.');
+      return;
+    }
     setResult(calculateCpm(activities));
   };
 
