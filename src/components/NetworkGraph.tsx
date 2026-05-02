@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import dagre from '@dagrejs/dagre';
 import {
   ReactFlow,
   useNodesState,
@@ -198,66 +199,24 @@ function CpmNodeComponent({ data }: NodeProps) {
 const nodeTypes = { cpmNode: CpmNodeComponent };
 
 function buildFlowElements(result: CpmResult): { nodes: Node[]; edges: Edge[] } {
-  const COL_WIDTH = 330;
-  const ROW_HEIGHT = 240;
+  // 상세 노드 크기 기준으로 레이아웃 계산 → 펼쳤을 때도 겹치지 않음
+  const DETAIL_W = 260;
+  const DETAIL_H = 200;
 
-  const successors = new Map<string, string[]>();
-  const predecessors = new Map<string, string[]>();
-  result.nodes.forEach((n) => { successors.set(n.id, []); predecessors.set(n.id, []); });
-  result.edges.forEach((e) => {
-    successors.get(e.from)?.push(e.to);
-    predecessors.get(e.to)?.push(e.from);
-  });
+  const g = new dagre.graphlib.Graph();
+  g.setDefaultEdgeLabel(() => ({}));
+  g.setGraph({ rankdir: 'LR', ranksep: 80, nodesep: 50, marginx: 60, marginy: 60 });
 
-  const level = new Map<string, number>();
-  result.nodes.forEach((n) => level.set(n.id, 0));
-  const inDegree = new Map<string, number>();
-  result.nodes.forEach((n) => inDegree.set(n.id, (predecessors.get(n.id) || []).length));
-  const queue = result.nodes.filter((n) => (predecessors.get(n.id) || []).length === 0).map((n) => n.id);
-  while (queue.length > 0) {
-    const id = queue.shift()!;
-    for (const child of successors.get(id) || []) {
-      level.set(child, Math.max(level.get(child) ?? 0, (level.get(id) ?? 0) + 1));
-      inDegree.set(child, (inDegree.get(child) ?? 1) - 1);
-      if (inDegree.get(child) === 0) queue.push(child);
-    }
-  }
+  result.nodes.forEach(n => g.setNode(n.id, { width: DETAIL_W, height: DETAIL_H }));
+  result.edges.forEach(e => g.setEdge(e.from, e.to));
+  dagre.layout(g);
 
-  const levelGroups = new Map<number, string[]>();
-  result.nodes.forEach((n) => {
-    const lv = level.get(n.id) ?? 0;
-    if (!levelGroups.has(lv)) levelGroups.set(lv, []);
-    levelGroups.get(lv)!.push(n.id);
-  });
-
-  const posY = new Map<string, number>();
-  const maxNodes = Math.max(...[...levelGroups.values()].map((g) => g.length));
-  const sortedLevels = [...levelGroups.keys()].sort((a, b) => a - b);
-  sortedLevels.forEach((lv) => {
-    const nodeIds = levelGroups.get(lv)!;
-    if (lv > 0) {
-      nodeIds.sort((a, b) => {
-        const avgY = (id: string) => {
-          const preds = predecessors.get(id) || [];
-          if (preds.length === 0) return 0;
-          return preds.reduce((sum, pid) => sum + (posY.get(pid) ?? 0), 0) / preds.length;
-        };
-        return avgY(a) - avgY(b);
-      });
-    }
-    const offset = ((maxNodes - nodeIds.length) / 2) * ROW_HEIGHT;
-    nodeIds.forEach((id, i) => posY.set(id, offset + i * ROW_HEIGHT));
-  });
-
-  // position = center of the 80×80 circle (origin [0.5, 0.5] means position is the center)
+  // dagre가 반환하는 좌표는 노드 중심점 → origin [0.5, 0.5]와 일치
   const nodes: Node[] = result.nodes.map((n) => ({
     id: n.id,
     type: 'cpmNode',
     origin: NODE_ORIGIN,
-    position: {
-      x: (level.get(n.id) ?? 0) * COL_WIDTH + 40,
-      y: (posY.get(n.id) ?? 0) + 40,
-    },
+    position: { x: g.node(n.id).x, y: g.node(n.id).y },
     data: {
       es: n.es,
       dr: n.duration,
