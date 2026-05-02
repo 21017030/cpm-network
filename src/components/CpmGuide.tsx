@@ -363,7 +363,13 @@ export default function CpmGuide({ onBack }: Props) {
           <p style={p}>4개의 작업으로 구성된 간단한 프로젝트를 통해 CPM 계산 과정을 살펴봅니다.</p>
 
           <h3 style={h3}>입력 데이터</h3>
-          <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem', marginBottom: 32 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', marginBottom: 32, tableLayout: 'fixed' }}>
+            <colgroup>
+              <col style={{ width: '10%' }} />
+              <col style={{ width: '20%' }} />
+              <col style={{ width: '25%' }} />
+              <col style={{ width: '45%' }} />
+            </colgroup>
             <thead>
               <tr style={{ background: '#4a90d9', color: '#fff' }}>
                 {['작업', '선행 작업', '소요 기간(DR)', '내용'].map((item, i) => (
