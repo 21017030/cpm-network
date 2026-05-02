@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface Props {
   onBack: () => void;
@@ -61,7 +61,48 @@ const h3:  React.CSSProperties  = { fontSize: '1rem', fontWeight: 600, color: '#
 const p:   React.CSSProperties  = { color: '#4a5568', lineHeight: 1.85, marginBottom: 12, fontSize: '0.96rem' };
 const fml: React.CSSProperties  = { background: '#f7fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '12px 18px', fontFamily: 'monospace', fontSize: '0.93rem', color: '#2d3748', marginBottom: 10 };
 
+const FIELD_DETAILS = [
+  {
+    abbr: 'ES', en: 'Earliest Start', color: '#4a90d9',
+    summary: '최초 착수 가능 시점',
+    detail: '이 작업을 가장 빨리 시작할 수 있는 시점입니다. 모든 선행 작업이 완료된 직후 즉시 착수할 수 있는 최초의 시점으로, 선행 작업들의 EF(최초 완료 시점) 중 가장 큰 값으로 결정됩니다. 선행 작업이 없는 시작 작업은 ES = 0입니다.',
+    formula: null,
+  },
+  {
+    abbr: 'DR', en: 'Duration', color: '#4a90d9',
+    summary: '작업 소요 기간',
+    detail: '해당 작업을 완료하는 데 필요한 기간입니다. 사용자가 직접 입력하는 유일한 값으로, ES·EF·LS·LF·TF 등 모든 시간 값의 계산 기반이 됩니다. 단위는 일(day) 또는 주(week)로 설정할 수 있습니다.',
+    formula: null,
+  },
+  {
+    abbr: 'EF', en: 'Earliest Finish', color: '#4a90d9',
+    summary: '최초 완료 가능 시점',
+    detail: '이 작업이 가장 빨리 완료될 수 있는 시점입니다. ES에 소요 기간(DR)을 더한 값으로 계산됩니다. EF는 후속 작업의 ES를 결정하는 데 사용되며, 전진 계산(Forward Pass)의 핵심 결과값입니다.',
+    formula: 'EF = ES + DR',
+  },
+  {
+    abbr: 'LS', en: 'Latest Start', color: '#718096',
+    summary: '최종 착수 가능 시점',
+    detail: '전체 프로젝트 일정을 지연시키지 않으면서 이 작업을 시작할 수 있는 가장 늦은 시점입니다. LF(최종 완료 시점)에서 소요 기간(DR)을 뺀 값으로 계산됩니다. 임계 작업은 LS = ES이며, 이보다 늦게 시작하면 전체 일정이 지연됩니다.',
+    formula: 'LS = LF − DR',
+  },
+  {
+    abbr: 'TF', en: 'Total Float', color: '#718096',
+    summary: '총 여유 시간',
+    detail: '전체 프로젝트 일정을 지연시키지 않고 이 작업을 늦출 수 있는 최대 시간입니다. TF = 0이면 임계 작업으로 분류되며, 조금이라도 지연되면 전체 프로젝트가 지연됩니다. TF가 클수록 일정 관리의 유연성이 높아지며, 비임계 작업의 자원을 임계 작업에 집중시키는 판단 기준이 됩니다.',
+    formula: 'TF = LS − ES  (또는 LF − EF)',
+  },
+  {
+    abbr: 'LF', en: 'Latest Finish', color: '#718096',
+    summary: '최종 완료 가능 시점',
+    detail: '전체 프로젝트 일정을 지연시키지 않으면서 이 작업이 완료되어야 하는 가장 늦은 시점입니다. 후진 계산(Backward Pass)에서 후속 작업들의 LS 중 가장 작은 값으로 결정됩니다. 종료 작업의 LF는 전체 프로젝트 기간과 같습니다.',
+    formula: null,
+  },
+];
+
 export default function CpmGuide({ onBack }: Props) {
+  const [showFieldDetail, setShowFieldDetail] = useState(false);
+
   return (
     <div style={{ background: '#f0f4f8', minHeight: '100vh', padding: '40px 20px', fontFamily: "'Segoe UI', sans-serif" }}>
       <div style={{ maxWidth: 920, margin: '0 auto', background: '#fff', borderRadius: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.10)', padding: '48px 52px' }}>
@@ -170,6 +211,58 @@ export default function CpmGuide({ onBack }: Props) {
                   ))}
                 </tbody>
               </table>
+
+              {/* 상세 설명 토글 */}
+              <button
+                onClick={() => setShowFieldDetail(v => !v)}
+                style={{
+                  marginTop: 12,
+                  width: '100%',
+                  background: showFieldDetail ? '#ebf8ff' : '#f7fafc',
+                  border: `1px solid ${showFieldDetail ? '#90cdf4' : '#e2e8f0'}`,
+                  borderRadius: 8,
+                  padding: '10px 16px',
+                  cursor: 'pointer',
+                  fontSize: '0.88rem',
+                  color: '#4a5568',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  fontWeight: 600,
+                }}
+              >
+                <span>각 항목 상세 설명</span>
+                <span style={{ fontSize: '0.75rem', color: '#718096' }}>{showFieldDetail ? '▲ 접기' : '▼ 펼치기'}</span>
+              </button>
+
+              {showFieldDetail && (
+                <div style={{ marginTop: 4, border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+                  {FIELD_DETAILS.map((f, i) => (
+                    <div
+                      key={f.abbr}
+                      style={{
+                        padding: '16px 18px',
+                        borderBottom: i < FIELD_DETAILS.length - 1 ? '1px solid #e2e8f0' : undefined,
+                        background: i % 2 === 0 ? '#fff' : '#f9fafb',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
+                        <span style={{ fontWeight: 700, fontSize: '1rem', color: '#4a90d9', minWidth: 28 }}>{f.abbr}</span>
+                        <span style={{ fontSize: '0.82rem', color: '#718096' }}>{f.en}</span>
+                        <span style={{ fontSize: '0.85rem', color: '#4a5568', fontWeight: 600 }}>— {f.summary}</span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '0.88rem', color: '#4a5568', lineHeight: 1.8, paddingLeft: 38 }}>
+                        {f.detail}
+                      </p>
+                      {f.formula && (
+                        <div style={{ marginTop: 8, marginLeft: 38, display: 'inline-block', background: '#ebf8ff', border: '1px solid #bee3f8', borderRadius: 6, padding: '4px 12px', fontFamily: 'monospace', fontSize: '0.88rem', color: '#2b6cb0' }}>
+                          {f.formula}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </section>
