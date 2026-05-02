@@ -8,8 +8,30 @@
 </head>
 <body>
   <div class="container">
-    <h1 id="message"></h1>
+    <h1>CPM 네트워크</h1>
+    <p class="subtitle">작업 정보를 입력하고 임계 경로를 계산하세요.</p>
+
+    <div class="table-wrapper">
+      <table id="activity-table">
+        <thead>
+          <tr>
+            <th>작업</th>
+            <th>작업 설명</th>
+            <th>선행 작업</th>
+            <th>소요 기간 (일)</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="activity-body">
+        </tbody>
+      </table>
+    </div>
+
+    <div class="actions">
+      <button id="add-btn">+ 항목 추가</button>
+    </div>
   </div>
+
   <script src="js/main.js"></script>
 </body>
 </html>
