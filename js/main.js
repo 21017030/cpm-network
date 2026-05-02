@@ -3,9 +3,10 @@ const addBtn = document.getElementById('add-btn');
 const globalUnit = document.getElementById('global-unit');
 const durationHeader = document.getElementById('duration-header');
 
+const unitLabel = { hour: '시간', day: '일', week: '주' };
+
 globalUnit.addEventListener('change', () => {
-  const label = globalUnit.value === 'week' ? '주' : '일';
-  durationHeader.textContent = `소요 기간 (${label})`;
+  durationHeader.textContent = `소요 기간 (${unitLabel[globalUnit.value]})`;
 });
 
 function createRow() {
