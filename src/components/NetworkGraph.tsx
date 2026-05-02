@@ -336,12 +336,28 @@ export default function NetworkGraph({ result }: Props) {
   const [edges, setEdges, onEdgesChange] = useEdgesState(baseEdges);
 
   useEffect(() => {
-    setNodes(enrichedNodes);
+    setNodes(prev => {
+      const prevMap = new Map(prev.map(n => [n.id, n]));
+      const sameGraph =
+        enrichedNodes.length === prev.length &&
+        enrichedNodes.every(n => prevMap.has(n.id));
+      // result가 바뀌어 노드 구성이 달라진 경우엔 위치까지 완전 초기화
+      if (!sameGraph) return enrichedNodes;
+      // 아니면 data/style만 교체하고 위치는 현재 상태 유지
+      return enrichedNodes.map(updated => ({
+        ...updated,
+        position: prevMap.get(updated.id)?.position ?? updated.position,
+      }));
+    });
   }, [enrichedNodes]);
 
   useEffect(() => {
     setEdges(baseEdges);
   }, [baseEdges]);
+
+  const handleResetPositions = useCallback(() => {
+    setNodes(enrichedNodes);
+  }, [enrichedNodes, setNodes]);
 
   const handleNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
     if (detailMode) return;
@@ -384,6 +400,22 @@ export default function NetworkGraph({ result }: Props) {
         <label htmlFor="detail-mode" style={{ cursor: 'pointer', fontSize: 14, color: '#4a5568', userSelect: 'none' }}>
           전체 상세 정보 표시
         </label>
+        <div style={{ marginLeft: 'auto' }}>
+          <button
+            onClick={handleResetPositions}
+            style={{
+              padding: '4px 12px',
+              fontSize: 13,
+              color: '#4a5568',
+              background: '#fff',
+              border: '1px solid #cbd5e0',
+              borderRadius: 6,
+              cursor: 'pointer',
+            }}
+          >
+            위치 초기화
+          </button>
+        </div>
       </div>
     </div>
   );
