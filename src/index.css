@@ -160,6 +160,21 @@ tbody td input:focus {
   background-color: #ebf4ff;
 }
 
+#reset-btn {
+  background-color: #fff;
+  color: #e53e3e;
+  border: 1px solid #e53e3e;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#reset-btn:hover {
+  background-color: #fff5f5;
+}
+
 #calculate-btn {
   background-color: #38a169;
   color: #ffffff;

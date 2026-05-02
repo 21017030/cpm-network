@@ -85,6 +85,18 @@ export default function App() {
     setResult(null);
   };
 
+  const handleReset = () => {
+    if (!window.confirm('모든 데이터를 초기화하시겠습니까?\n작업 목록과 그래프가 모두 삭제됩니다.')) return;
+    nextId = 14;
+    setActivities([
+      { id: 11, name: '', description: '', predecessors: [], duration: '' },
+      { id: 12, name: '', description: '', predecessors: [], duration: '' },
+      { id: 13, name: '', description: '', predecessors: [], duration: '' },
+    ]);
+    setUnit('day');
+    setResult(null);
+  };
+
   return (
     <div className="container">
       <h1>CPM 네트워크</h1>
@@ -99,6 +111,7 @@ export default function App() {
         onDelete={handleDelete}
         onUnitChange={setUnit}
         onLoadExample={handleLoadExample}
+        onReset={handleReset}
       />
 
       <div className="actions">
