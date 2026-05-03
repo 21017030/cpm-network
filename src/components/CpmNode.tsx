@@ -87,7 +87,7 @@ export function CpmNodeComponent({ data }: NodeProps) {
           {name}
         </div>
 
-        {/* PC: 호버 시 안내 툴팁 / 모바일: 탭 시 작업 설명 툴팁 */}
+        {/* PC: 호버 시 설명 툴팁 (설명 없으면 안내 문구) */}
         {!isMobile && hovered && (
           <div style={{
             position: 'absolute',
@@ -96,14 +96,26 @@ export function CpmNodeComponent({ data }: NodeProps) {
             transform: 'translateX(-50%)',
             background: '#2d3748',
             color: '#fff',
-            padding: '4px 8px',
-            borderRadius: 4,
+            padding: '7px 12px',
+            borderRadius: 6,
             fontSize: 21,
             whiteSpace: 'nowrap',
             zIndex: 9999,
             pointerEvents: 'none',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
           }}>
-            클릭하여 상세 정보 표시
+            {description || '클릭하여 상세 정보 표시'}
+            <div style={{
+              position: 'absolute',
+              bottom: '100%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: 0,
+              height: 0,
+              borderLeft: '6px solid transparent',
+              borderRight: '6px solid transparent',
+              borderBottom: '6px solid #2d3748',
+            }} />
           </div>
         )}
         {isMobile && showMobileDesc && description && (
