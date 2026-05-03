@@ -265,4 +265,80 @@ CPM 네트워크 생성기 - 개발 중 발생한 문제 및 해결 기록
              src/components/NetworkGraph.tsx, src/components/CpmGuide.tsx
   PC 화면 변경 없음 — 미디어 쿼리와 클래스 기본값이 기존 인라인 스타일과 동일.
 
+
+────────────────────────────────────────────────────────────────
+[10] 모바일에서 노드 탭 시 툴팁이 사라지지 않고, 노드가 자꾸 접히는 문제
+────────────────────────────────────────────────────────────────
+
+▸ 관련 커밋: 924143d, 98bec47
+
+▸ 증상 1 — 안내 툴팁이 탭할 때마다 계속 표시됨
+  모바일에서 원형 노드를 탭하면 "클릭하여 상세 정보 표시" 툴팁이
+  사라지지 않고 화면에 계속 떠 있음.
+
+▸ 증상 2 — 노드가 자꾸 원형으로 돌아감
+  노드를 한 번 탭해서 상세 보기로 펼쳤다가, 설명을 읽으려고 다시 탭하면
+  노드가 원형으로 접혀버려 설명을 제대로 볼 수 없음.
+
+▸ 원인
+  두 증상 모두 모바일에서 터치 이벤트가 마우스 이벤트를 동시에 발생시키는
+  브라우저 동작 때문.
+
+  증상 1: onMouseEnter가 터치 탭으로도 트리거되어 hovered 상태가 true로 바뀌고,
+          이후 onMouseLeave가 발생하지 않아 툴팁이 계속 표시됨.
+
+  증상 2: onNodeClick(ReactFlow)이 탭마다 발생해 expandedNodes를 토글.
+          펼친 뒤 다시 탭하면 바로 접혀버려 상세 정보를 읽을 수가 없음.
+
+▸ 해결
+  모바일과 PC의 노드 인터랙션을 분리.
+
+  ① isMobile 감지
+       const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+     모바일에서는 onMouseEnter / onMouseLeave 핸들러를 무시해
+     hover 상태가 변하지 않도록 차단.
+
+  ② 모바일 인터랙션 재설계 (NetworkGraph.tsx)
+     - 한 번 탭 (onNodeClick):
+         mobileDescNode 상태를 토글 → 해당 노드에 설명 툴팁 표시/숨김
+     - 두 번 탭 (onNodeDoubleClick):
+         expandedNodes를 토글 → 상세 박스로 확장/원형으로 축소
+     ReactFlow의 onNodeDoubleClick 이벤트를 활용.
+     더블탭 시 onNodeClick도 두 번 발생하므로 mobileDescNode는
+     열렸다가 다시 닫혀 최종적으로 null 상태가 됨(의도된 동작).
+
+  ③ showMobileDesc 플래그 전파
+     mobileDescNode를 useCpmLayout 훅에 파라미터로 전달.
+     enrichedNodes 계산 시 node.id === mobileDescNode 여부를
+     showMobileDesc로 각 노드의 data에 포함.
+     CpmNodeComponent에서 이 플래그로 설명 툴팁 표시 여부 결정.
+
+  ④ PC 원형 노드 툴팁 개선 (98bec47)
+     PC에서도 원형 노드 hover 시 "안내 문구" 대신 실제 작업 설명이
+     표시되도록 개선. description 없는 노드만 안내 문구 표시.
+
+  핵심 코드:
+    // NetworkGraph.tsx
+    const handleNodeClick: NodeMouseHandler = useCallback((_, node) => {
+      if (detailMode) return;
+      if (isMobile) {
+        setMobileDescNode(prev => prev === node.id ? null : node.id);
+      } else {
+        toggleExpanded(node.id);
+      }
+    }, [detailMode, toggleExpanded]);
+
+    const handleNodeDoubleClick: NodeMouseHandler = useCallback((_, node) => {
+      if (!isMobile || detailMode) return;
+      toggleExpanded(node.id);
+      setMobileDescNode(null);
+    }, [detailMode, toggleExpanded]);
+
+    // CpmNode.tsx
+    onMouseEnter={() => { if (!isMobile) setHovered(true); }}
+    onMouseLeave={() => { if (!isMobile) setHovered(false); }}
+
+    // 툴팁 표시 조건
+    {(isMobile ? showMobileDesc : hovered) && description && <툴팁 />}
+
 ================================================================
