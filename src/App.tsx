@@ -9,7 +9,6 @@
 // ─────────────────────────────────────────────
 
 import { useState, useRef } from 'react';
-import React from 'react';
 import ActivityTable from './components/ActivityTable';
 import NetworkGraph from './components/NetworkGraph';
 import CpmGuide from './components/CpmGuide';
