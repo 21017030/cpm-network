@@ -341,4 +341,40 @@ CPM 네트워크 생성기 - 개발 중 발생한 문제 및 해결 기록
     // 툴팁 표시 조건
     {(isMobile ? showMobileDesc : hovered) && description && <툴팁 />}
 
+
+────────────────────────────────────────────────────────────────
+[11] 예시 불러오기 선택 시 기존 그래프가 사라지는 문제
+────────────────────────────────────────────────────────────────
+
+▸ 관련 커밋: 6c1a202
+
+▸ 증상
+  그래프를 생성한 뒤 "예시 불러오기" 드롭다운에서 다른 예시를 선택하면
+  그래프가 즉시 사라짐. "그래프 생성" 버튼을 누르기 전에는 그래프가
+  유지되어야 하는데 예시 선택만으로 초기화됨.
+
+▸ 원인
+  handleLoadExample 함수 내에서 setResult(null)을 호출하고 있었음.
+  예시를 선택하면 작업 목록(activities)과 단위(unit)만 바꾸면 되는데,
+  불필요하게 result까지 초기화해 그래프가 지워짐.
+
+▸ 해결
+  handleLoadExample에서 setResult(null) 한 줄 제거.
+  그래프는 "그래프 생성" 버튼(handleCalculate)을 눌렀을 때만 갱신되며,
+  초기화 버튼(handleReset)을 누를 때는 기존대로 result가 null로 초기화됨.
+
+  핵심 코드:
+    // 변경 전
+    const handleLoadExample = (index: number) => {
+      setActivities(ex.activities);
+      setUnit(ex.unit);
+      setResult(null); // ← 제거
+    };
+
+    // 변경 후
+    const handleLoadExample = (index: number) => {
+      setActivities(ex.activities);
+      setUnit(ex.unit);
+    };
+
 ================================================================
