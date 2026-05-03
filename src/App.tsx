@@ -139,11 +139,11 @@ export default function App() {
   };
 
   // 예시 불러오기: 선택한 인덱스의 예시 데이터로 상태를 교체
+  // 그래프는 "그래프 생성" 버튼을 눌러야만 갱신되므로 result는 유지한다.
   const handleLoadExample = (index: number) => {
     const ex = EXAMPLES[index];
     setActivities(ex.activities);
     setUnit(ex.unit);
-    setResult(null);
   };
 
   // 초기화: 확인 후 모든 상태를 초기값으로 되돌림
