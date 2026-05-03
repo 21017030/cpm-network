@@ -65,7 +65,8 @@ export default function NetworkGraph({ result }: Props) {
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', borderRadius: 8, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-      <div style={{ width: '100%', height: 650, position: 'relative' }}>
+      {/* graph-canvas: height를 CSS로 관리해 모바일에서 높이를 줄임 */}
+      <div className="graph-canvas">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -81,13 +82,9 @@ export default function NetworkGraph({ result }: Props) {
         />
 
         {/* 도움말 패널: 우측 하단에 오버레이로 표시 */}
+        {/* graph-legend: width: 360px를 CSS로 옮겨 모바일에서 뷰포트 기준으로 줄임 */}
         {showLegend && (
-          <div style={{
-            position: 'absolute', bottom: 12, right: 12,
-            background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10,
-            padding: '18px 20px', zIndex: 20, boxShadow: '0 4px 16px rgba(0,0,0,0.13)',
-            width: 360, color: '#2d3748',
-          }}>
+          <div className="graph-legend">
             <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16, borderBottom: '1px solid #e2e8f0', paddingBottom: 10 }}>도움말</div>
 
             {/* 원형 노드 설명 */}
@@ -154,7 +151,8 @@ export default function NetworkGraph({ result }: Props) {
       </div>
 
       {/* 하단 컨트롤 바 */}
-      <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8, borderTop: '1px solid #e2e8f0', background: '#f7fafc' }}>
+      {/* graph-controls: 모바일에서 버튼이 두 줄로 줄바꿈될 수 있도록 CSS 클래스로 관리 */}
+      <div className="graph-controls">
         <input
           type="checkbox"
           id="detail-mode"

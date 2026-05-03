@@ -215,4 +215,52 @@ CPM 네트워크 생성기 - 개발 중 발생한 문제 및 해결 기록
     // 각 노드를 중심점 기준으로 스케일
     position: { x: cx + (cur.position.x - cx) * scaleX, ... }
 
+
+────────────────────────────────────────────────────────────────
+[9] 모바일 환경에서 레이아웃이 깨지는 문제
+────────────────────────────────────────────────────────────────
+
+▸ 증상
+  모바일(768px 이하) 화면에서 전체 레이아웃이 다음과 같이 무너짐.
+  - CpmGuide 페이지: 좌우 패딩 48~52px이 너무 넓어 콘텐츠가 잘림.
+  - CpmGuide 2열 그리드(계산 절차, 단계별 계산 등): 각 열이 너무 좁아 텍스트 판독 불가.
+  - CpmGuide 항목 설명 테이블: min-width: 420px로 인해 화면 밖으로 넘침.
+  - NetworkGraph 범례 패널: 고정 width: 360px가 소형 화면에서 화면 밖으로 삐져나옴.
+  - NetworkGraph 컨트롤 바: "중앙으로 / 위치 초기화 / 도움말" 버튼이 한 줄에 들어가지 않아 잘림.
+  - result-summary: 가로 배치 상태에서 두 항목이 겹쳐 표시됨.
+  - body/container 패딩이 데스크톱 기준(40px)으로 되어 있어 화면이 더욱 좁아짐.
+
+▸ 원인
+  기존 코드가 모바일을 전혀 고려하지 않고 인라인 스타일과 고정 값만 사용해
+  작성되었음. CSS 미디어 쿼리가 전혀 없었고, 인라인 스타일은
+  CSS 클래스보다 우선순위가 높아 @media 쿼리로 덮어쓸 수가 없었음.
+
+▸ 해결 방식
+
+  ① index.css에 반응형 CSS 클래스 7개 추가 (PC 기본값 포함)
+     .app-header, .guide-inner, .guide-grid-2col, .guide-node-desc,
+     .graph-canvas, .graph-controls, .graph-legend
+
+  ② 각 컴포넌트에서 위 클래스가 제어해야 할 속성(padding, width, height,
+     grid-template-columns 등)을 인라인 style에서 제거하고 className으로 교체.
+
+  ③ index.css에 미디어 쿼리 2단계 추가:
+     @media (max-width: 768px): 패딩 축소, 2열→1열, 범례 폭 반응형, 버튼 줄바꿈 허용
+     @media (max-width: 480px): 패딩 추가 축소, 그래프 높이 축소
+
+  ④ CpmGuide 테이블 3개에 <div style={{ overflowX: 'auto' }}> 래퍼 추가
+     (입력 데이터 테이블, 항목 설명 테이블, 계산 결과 테이블)
+
+  ⑤ ActivityTable 테이블에 min-width: 520px 추가
+     (이미 overflow-x: auto 래퍼가 있어 가로 스크롤 방식으로 처리됨)
+
+▸ 핵심 원칙
+  인라인 스타일(style={{ }})은 CSS 미디어 쿼리로 덮을 수 없으므로,
+  화면 크기에 따라 달라져야 하는 속성은 반드시 CSS 클래스로 옮겨야 한다.
+
+▸ 영향 범위
+  수정 파일: src/index.css, src/App.tsx,
+             src/components/NetworkGraph.tsx, src/components/CpmGuide.tsx
+  PC 화면 변경 없음 — 미디어 쿼리와 클래스 기본값이 기존 인라인 스타일과 동일.
+
 ================================================================

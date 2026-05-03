@@ -177,7 +177,8 @@ export default function App() {
 
   return (
     <div className="container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      {/* app-header: 모바일에서 버튼이 제목 아래로 줄바꿈될 수 있도록 CSS 클래스로 관리 */}
+      <div className="app-header">
         <div>
           <h1>CPM 네트워크 생성기</h1>
           <p className="subtitle">작업 정보를 입력하고 임계 경로를 계산하세요.</p>

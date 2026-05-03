@@ -153,7 +153,8 @@ export default function CpmGuide({ onBack }: Props) {
 
   return (
     <div style={{ background: '#f0f4f8', minHeight: '100vh', padding: '40px 20px', fontFamily: "'Segoe UI', sans-serif" }}>
-      <div style={{ maxWidth: 920, margin: '0 auto', background: '#fff', borderRadius: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.10)', padding: '48px 52px' }}>
+      {/* guide-inner: padding을 CSS로 옮겨 모바일에서 좌우 여백을 줄임 */}
+      <div className="guide-inner" style={{ maxWidth: 920, margin: '0 auto', background: '#fff', borderRadius: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.10)' }}>
 
         {/* 헤더: 뒤로 가기 버튼 + 페이지 제목 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 44 }}>
@@ -236,9 +237,13 @@ export default function CpmGuide({ onBack }: Props) {
               </div>
             </div>
 
-            {/* 항목 설명 테이블: tableLayout fixed + colgroup으로 '의미' 열을 넓게 확보 */}
-            <div style={{ flex: 1, minWidth: 420 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', tableLayout: 'fixed' }}>
+            {/*
+             * 항목 설명 테이블: tableLayout fixed + colgroup으로 '의미' 열을 넓게 확보
+             * guide-node-desc: PC에서는 min-width: 420px 유지, 모바일에서는 해제 (Bug #6 참고)
+             */}
+            <div className="guide-node-desc">
+              <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', tableLayout: 'fixed', minWidth: 300 }}>
                 <colgroup>
                   <col style={{ width: 55 }} />
                   <col style={{ width: 140 }} />
@@ -261,6 +266,7 @@ export default function CpmGuide({ onBack }: Props) {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
 
@@ -320,8 +326,8 @@ export default function CpmGuide({ onBack }: Props) {
         <section style={sec}>
           <h2 style={h2}>계산 절차</h2>
 
-          {/* 전진 계산 / 후진 계산 카드 2열 배치 */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+          {/* 전진 계산 / 후진 계산 카드 2열 배치 — 모바일에서 1열로 전환 */}
+          <div className="guide-grid-2col" style={{ gap: 20, marginBottom: 20 }}>
             <div style={{ background: '#ebf8ff', borderRadius: 10, padding: 22, border: '1px solid #bee3f8' }}>
               <h3 style={{ ...h3, marginTop: 0, color: '#2b6cb0' }}>① 전진 계산</h3>
               <p style={{ ...p, fontSize: '0.88rem' }}>
@@ -372,7 +378,8 @@ export default function CpmGuide({ onBack }: Props) {
 
           {/* 입력 데이터 테이블: 내용 열을 45%로 고정하여 텍스트가 잘리지 않도록 함 */}
           <h3 style={h3}>입력 데이터</h3>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', marginBottom: 32, tableLayout: 'fixed' }}>
+          <div style={{ overflowX: 'auto', marginBottom: 32 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', tableLayout: 'fixed', minWidth: 360 }}>
             <colgroup>
               <col style={{ width: '10%' }} />
               <col style={{ width: '20%' }} />
@@ -404,6 +411,7 @@ export default function CpmGuide({ onBack }: Props) {
               ))}
             </tbody>
           </table>
+          </div>
 
           {/* SVG 네트워크 다이어그램: viewBox 고정, width 100%로 반응형 */}
           <h3 style={h3}>네트워크 다이어그램</h3>
@@ -444,7 +452,8 @@ export default function CpmGuide({ onBack }: Props) {
 
           {/* 계산 결과 테이블: NODES 데이터를 순회하여 렌더링 */}
           <h3 style={h3}>계산 결과</h3>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', marginBottom: 14 }}>
+          <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', marginBottom: 14, minWidth: 480 }}>
             <thead>
               <tr style={{ background: '#4a90d9', color: '#fff' }}>
                 {['작업', '선행', 'DR', 'ES', 'EF', 'LS', 'LF', 'TF', '임계 경로'].map((item, i, arr) => (
@@ -471,15 +480,16 @@ export default function CpmGuide({ onBack }: Props) {
               ))}
             </tbody>
           </table>
+          </div>
 
           {/* 임계 경로 요약 배너 */}
           <div style={{ padding: '12px 18px', background: '#fff5f5', border: '1px solid #fed7d7', borderRadius: 8, fontSize: '0.92rem', color: '#c53030' }}>
             🔴 <strong>임계 경로: A → C → D</strong> &nbsp;|&nbsp; 최소 프로젝트 완료 기간: <strong>9</strong>
           </div>
 
-          {/* 단계별 계산 과정: 전진/후진 2열로 나란히 표시 */}
+          {/* 단계별 계산 과정: 전진/후진 2열로 나란히 표시 — 모바일에서 1열로 전환 */}
           <h3 style={{ ...h3, marginTop: 28 }}>단계별 계산 과정</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div className="guide-grid-2col" style={{ gap: 16 }}>
             <div style={{ background: '#ebf8ff', borderRadius: 10, padding: 18, border: '1px solid #bee3f8', fontSize: '0.88rem', color: '#2d3748', lineHeight: 1.9 }}>
               <div style={{ fontWeight: 700, color: '#2b6cb0', marginBottom: 10 }}>① 전진 계산</div>
               <div>A: ES = 0, EF = 0 + 2 = <strong>2</strong></div>
@@ -503,7 +513,8 @@ export default function CpmGuide({ onBack }: Props) {
         {/* ── 섹션 5: 임계 경로의 의미와 활용 ── */}
         <section style={{ ...sec, marginBottom: 0 }}>
           <h2 style={h2}>임계 경로의 의미와 활용</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          {/* 4개 카드 2열 배치 — 모바일에서 1열로 전환 */}
+          <div className="guide-grid-2col" style={{ gap: 16 }}>
             {[
               { bg: '#fff5f5', border: '#fed7d7', title: '⚠️ 임계 작업이 지연되면',      desc: 'TF = 0인 임계 경로 위의 작업이 지연되면 전체 프로젝트의 최소 완료 기간도 함께 늘어납니다.' },
               { bg: '#f0fff4', border: '#c6f6d5', title: '✅ 비임계 작업은 유연하게 관리', desc: 'TF 범위 안에서의 지연은 전체 프로젝트 완료 시점에 영향을 주지 않으므로 일정 조정이 가능합니다.' },
