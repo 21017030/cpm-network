@@ -332,11 +332,12 @@ tbody td input:focus {
   position: relative;
 }
 
-/* NetworkGraph 하단 컨트롤 바: flex-wrap을 모바일에서 허용하기 위해 클래스로 분리 */
+/* NetworkGraph 하단 컨트롤 바 */
 .graph-controls {
   padding: 10px 16px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 8px;
   border-top: 1px solid #e2e8f0;
   background: #f7fafc;
@@ -430,10 +431,7 @@ tbody td input:focus {
     max-width: 320px;
   }
 
-  /* 컨트롤 버튼들("중앙으로", "위치 초기화", "도움말")이 넘칠 경우 줄바꿈 */
   .graph-controls {
-    flex-wrap: wrap;
-    gap: 6px;
     padding: 8px 12px;
   }
 }

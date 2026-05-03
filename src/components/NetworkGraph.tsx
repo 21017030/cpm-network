@@ -151,27 +151,26 @@ export default function NetworkGraph({ result }: Props) {
       </div>
 
       {/* 하단 컨트롤 바 */}
-      {/* graph-controls: 모바일에서 버튼이 두 줄로 줄바꿈될 수 있도록 CSS 클래스로 관리 */}
       <div className="graph-controls">
-        <input
-          type="checkbox"
-          id="detail-mode"
-          checked={detailMode}
-          onChange={e => setDetailMode(e.target.checked)}
-          style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#4299e1' }}
-        />
-        <label htmlFor="detail-mode" style={{ cursor: 'pointer', fontSize: 14, color: '#4a5568', userSelect: 'none' }}>
-          전체 상세 정보 표시
-        </label>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-          {/* 그래프를 화면 중앙에 맞추기 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <input
+            type="checkbox"
+            id="detail-mode"
+            checked={detailMode}
+            onChange={e => setDetailMode(e.target.checked)}
+            style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#4299e1' }}
+          />
+          <label htmlFor="detail-mode" style={{ cursor: 'pointer', fontSize: 14, color: '#4a5568', userSelect: 'none' }}>
+            전체 상세 정보 표시
+          </label>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
           <button
             onClick={() => rfInstance?.fitView({ duration: 400 })}
             style={{ padding: '4px 12px', fontSize: 13, color: '#4a5568', background: '#fff', border: '1px solid #cbd5e0', borderRadius: 6, cursor: 'pointer' }}
           >
             중앙으로
           </button>
-          {/* 드래그로 이동시킨 노드 위치를 초기 레이아웃으로 복원 */}
           <button
             onClick={resetPositions}
             style={{ padding: '4px 12px', fontSize: 13, color: '#4a5568', background: '#fff', border: '1px solid #cbd5e0', borderRadius: 6, cursor: 'pointer' }}
