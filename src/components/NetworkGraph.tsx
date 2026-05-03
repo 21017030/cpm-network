@@ -9,7 +9,7 @@
 //   - 중앙으로 / 위치 초기화 / 도움말 버튼 제공
 // ─────────────────────────────────────────────
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   ReactFlow,
   Node,
@@ -43,9 +43,13 @@ export default function NetworkGraph({ result }: Props) {
   // 레이아웃 계산 및 노드/엣지 상태 관리를 훅에 위임
   const { nodes, setNodes, onNodesChange, edges, onEdgesChange, resetPositions } = useCpmLayout(result, detailMode, expandedNodes, mobileDescNode);
 
-  // 새 계산 결과가 들어오면 개별 확장 상태·설명 표시 초기화
-  // useEffect 대신 result를 key로 사용해 컴포넌트 자체를 리마운트하는 방식도 있으나,
-  // 여기서는 result 변경 시 상태만 초기화하는 패턴 유지
+  // 새 그래프가 생성되면 확장 상태·설명 툴팁·전체 상세 보기 모두 초기화
+  useEffect(() => {
+    setExpandedNodes(new Set());
+    setMobileDescNode(null);
+    setDetailMode(false);
+  }, [result]);
+
   const toggleExpanded = useCallback((id: string) => {
     setExpandedNodes(prev => {
       const next = new Set(prev);
