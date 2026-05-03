@@ -172,6 +172,11 @@ export default function NetworkGraph({ result }: Props) {
         )}
       </div>
 
+      {/* 조작 안내 텍스트 */}
+      <p className="graph-hint">
+        {isMobile ? '한 번 탭: 설명 표시 / 두 번 탭: 상세 정보 표시' : '클릭: 상세 정보 표시 / 마우스 오버: 설명 표시'}
+      </p>
+
       {/* 하단 컨트롤 바 */}
       <div className="graph-controls">
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

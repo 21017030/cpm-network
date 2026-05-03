@@ -20,21 +20,6 @@ import { Activity, Unit } from './types';
 // React state가 아닌 모듈 변수로 관리하여 리렌더링과 무관하게 항상 증가한다.
 let nextId = 14;
 
-// 고정 위치 스크롤 버튼 공통 스타일
-const scrollBtnStyle: React.CSSProperties = {
-  background: '#4a90d9',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '50%',
-  width: 44,
-  height: 44,
-  fontSize: 20,
-  cursor: 'pointer',
-  boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-};
 
 // 초기 빈 행 3개: 앱이 처음 열렸을 때 입력 테이블에 보여줄 기본 상태
 const initialActivities: Activity[] = [
@@ -225,14 +210,14 @@ export default function App() {
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           title="맨 위로"
-          style={scrollBtnStyle}
+          className="scroll-btn"
         >
           ↑
         </button>
         <button
           onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
           title="맨 아래로"
-          style={scrollBtnStyle}
+          className="scroll-btn"
         >
           ↓
         </button>

@@ -332,6 +332,33 @@ tbody td input:focus {
   position: relative;
 }
 
+/* 그래프 조작 안내 텍스트 */
+.graph-hint {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #a0aec0;
+  padding: 5px 16px 6px;
+  background: #f7fafc;
+  border-top: 1px solid #e2e8f0;
+  margin: 0;
+}
+
+/* 스크롤 이동 버튼 (App, CpmGuide 공통) */
+.scroll-btn {
+  background: rgba(74, 144, 217, 0.72);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* NetworkGraph 하단 컨트롤 바 */
 .graph-controls {
   padding: 10px 16px;
@@ -433,6 +460,12 @@ tbody td input:focus {
 
   .graph-controls {
     padding: 8px 12px;
+  }
+
+  .scroll-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 15px;
   }
 }
 
