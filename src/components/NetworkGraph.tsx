@@ -101,6 +101,7 @@ export default function NetworkGraph({ result }: Props) {
           onInit={setRfInstance}
           minZoom={0.1}
           fitView
+          nodesConnectable={false}
         />
 
         {/* 도움말 패널: 우측 하단에 오버레이로 표시 */}
