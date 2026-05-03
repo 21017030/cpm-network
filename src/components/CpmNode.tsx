@@ -24,14 +24,18 @@ export type CpmNodeData = {
   tf: number;          // Total Float
   lf: number;          // Latest Finish
   isCritical: boolean; // 임계 경로 여부
-  isExpanded: boolean; // 개별 클릭으로 상세 모드가 된 경우
-  detailMode: boolean; // 전체 상세 보기 모드가 켜진 경우
-  [key: string]: unknown; // ReactFlow NodeData 인덱스 시그니처 요구 사항
+  isExpanded: boolean;      // 개별 클릭으로 상세 모드가 된 경우
+  detailMode: boolean;      // 전체 상세 보기 모드가 켜진 경우
+  showMobileDesc: boolean;  // 모바일: 탭으로 설명 툴팁 표시
+  [key: string]: unknown;   // ReactFlow NodeData 인덱스 시그니처 요구 사항
 };
+
+// 터치 디바이스(모바일) 여부
+const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
 export function CpmNodeComponent({ data }: NodeProps) {
   const [hovered, setHovered] = useState(false);
-  const { es, dr, ef, name, description, ls, tf, lf, isCritical, isExpanded, detailMode } = data as CpmNodeData;
+  const { es, dr, ef, name, description, ls, tf, lf, isCritical, isExpanded, detailMode, showMobileDesc } = data as CpmNodeData;
 
   // 둘 중 하나라도 true이면 상세 박스로 렌더링
   const showDetail   = detailMode || isExpanded;
@@ -44,8 +48,8 @@ export function CpmNodeComponent({ data }: NodeProps) {
     return (
       <div
         style={{ position: 'relative', width: '100%', height: '100%' }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onMouseEnter={() => { if (!isMobile) setHovered(true); }}
+        onMouseLeave={() => { if (!isMobile) setHovered(false); }}
       >
         {/* 소요 기간: 원 바깥 위쪽에 표시 */}
         <div style={{
@@ -83,8 +87,8 @@ export function CpmNodeComponent({ data }: NodeProps) {
           {name}
         </div>
 
-        {/* 호버 시 안내 툴팁 */}
-        {hovered && (
+        {/* PC: 호버 시 안내 툴팁 / 모바일: 탭 시 작업 설명 툴팁 */}
+        {!isMobile && hovered && (
           <div style={{
             position: 'absolute',
             top: 'calc(100% + 8px)',
@@ -100,6 +104,36 @@ export function CpmNodeComponent({ data }: NodeProps) {
             pointerEvents: 'none',
           }}>
             클릭하여 상세 정보 표시
+          </div>
+        )}
+        {isMobile && showMobileDesc && description && (
+          <div style={{
+            position: 'absolute',
+            top: 'calc(100% + 8px)',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: '#2d3748',
+            color: '#fff',
+            padding: '7px 12px',
+            borderRadius: 6,
+            fontSize: 23,
+            whiteSpace: 'nowrap',
+            zIndex: 9999,
+            pointerEvents: 'none',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+          }}>
+            {description}
+            <div style={{
+              position: 'absolute',
+              bottom: '100%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: 0,
+              height: 0,
+              borderLeft: '6px solid transparent',
+              borderRight: '6px solid transparent',
+              borderBottom: '6px solid #2d3748',
+            }} />
           </div>
         )}
       </div>
@@ -118,8 +152,8 @@ export function CpmNodeComponent({ data }: NodeProps) {
   return (
     <div
       style={{ position: 'relative', width: '100%', cursor: detailMode ? 'default' : 'pointer' }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() => { if (!isMobile) setHovered(true); }}
+      onMouseLeave={() => { if (!isMobile) setHovered(false); }}
     >
       <Handle type="target" position={Position.Left}  style={{ background: isCritical ? '#e53e3e' : '#a0aec0' }} />
       <Handle type="source" position={Position.Right} style={{ background: isCritical ? '#e53e3e' : '#a0aec0' }} />
@@ -161,8 +195,8 @@ export function CpmNodeComponent({ data }: NodeProps) {
         </div>
       </div>
 
-      {/* 호버 시 작업 설명 툴팁 (description이 있을 때만 표시) */}
-      {hovered && description && (
+      {/* 작업 설명 툴팁: PC는 호버, 모바일은 탭 시 표시 */}
+      {(isMobile ? showMobileDesc : hovered) && description && (
         <div style={{
           position: 'absolute',
           bottom: 'calc(100% + 10px)',

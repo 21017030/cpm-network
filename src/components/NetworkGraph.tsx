@@ -9,16 +9,20 @@
 //   - 중앙으로 / 위치 초기화 / 도움말 버튼 제공
 // ─────────────────────────────────────────────
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   ReactFlow,
   Node,
   ReactFlowInstance,
+  NodeMouseHandler,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { CpmResult } from '../lib/cpm';
 import { nodeTypes } from './CpmNode';
 import { useCpmLayout } from '../hooks/useCpmLayout';
+
+// 터치 디바이스(모바일) 여부: 모듈 로드 시 한 번 판단
+const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
 interface Props {
   result: CpmResult;
@@ -33,26 +37,43 @@ export default function NetworkGraph({ result }: Props) {
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
   // 도움말 패널 표시 여부
   const [showLegend, setShowLegend] = useState(false);
+  // 모바일: 설명 툴팁을 표시 중인 노드 ID (null이면 없음)
+  const [mobileDescNode, setMobileDescNode] = useState<string | null>(null);
 
   // 레이아웃 계산 및 노드/엣지 상태 관리를 훅에 위임
-  const { nodes, setNodes, onNodesChange, edges, onEdgesChange, resetPositions } = useCpmLayout(result, detailMode, expandedNodes);
+  const { nodes, setNodes, onNodesChange, edges, onEdgesChange, resetPositions } = useCpmLayout(result, detailMode, expandedNodes, mobileDescNode);
 
-  // 새 계산 결과가 들어오면 개별 확장 상태 초기화
-  useEffect(() => {
-    setExpandedNodes(new Set());
-  }, [result]);
-
-  // 원형 모드에서 노드 클릭: 해당 노드의 상세 보기를 토글
-  // 전체 상세 보기(detailMode)가 켜져 있으면 개별 클릭은 무시
-  const handleNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
-    if (detailMode) return;
+  // 새 계산 결과가 들어오면 개별 확장 상태·설명 표시 초기화
+  // useEffect 대신 result를 key로 사용해 컴포넌트 자체를 리마운트하는 방식도 있으나,
+  // 여기서는 result 변경 시 상태만 초기화하는 패턴 유지
+  const toggleExpanded = useCallback((id: string) => {
     setExpandedNodes(prev => {
       const next = new Set(prev);
-      if (next.has(node.id)) next.delete(node.id);
-      else next.add(node.id);
+      if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
-  }, [detailMode]);
+  }, []);
+
+  // 노드 클릭:
+  //   모바일 → 설명 툴팁 토글 (한 번 탭)
+  //   PC     → 상세 확장 토글
+  const handleNodeClick: NodeMouseHandler = useCallback((_, node) => {
+    if (detailMode) return;
+    if (isMobile) {
+      setMobileDescNode(prev => prev === node.id ? null : node.id);
+    } else {
+      toggleExpanded(node.id);
+    }
+  }, [detailMode, toggleExpanded]);
+
+  // 노드 더블클릭:
+  //   모바일 → 상세 확장 토글 (두 번 탭)
+  //   PC     → 무시 (클릭으로 이미 처리)
+  const handleNodeDoubleClick: NodeMouseHandler = useCallback((_, node) => {
+    if (!isMobile || detailMode) return;
+    toggleExpanded(node.id);
+    setMobileDescNode(null);
+  }, [detailMode, toggleExpanded]);
 
   // 노드 호버 시 zIndex를 높여 툴팁이 인접 노드 위에 표시되도록 함
   const handleNodeMouseEnter = useCallback((_: React.MouseEvent, node: Node) => {
@@ -74,6 +95,7 @@ export default function NetworkGraph({ result }: Props) {
           onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
           onNodeClick={handleNodeClick}
+          onNodeDoubleClick={handleNodeDoubleClick}
           onNodeMouseEnter={handleNodeMouseEnter}
           onNodeMouseLeave={handleNodeMouseLeave}
           onInit={setRfInstance}

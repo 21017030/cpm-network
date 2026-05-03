@@ -115,7 +115,7 @@ function buildFlowElements(result: CpmResult, detailLayout = false): { nodes: No
 
 // ─── 커스텀 훅 ───────────────────────────────
 // NetworkGraph 컴포넌트에서 호출하여 노드/엣지 상태와 위치 관리 로직을 제공한다.
-export function useCpmLayout(result: CpmResult, detailMode: boolean, expandedNodes: Set<string>) {
+export function useCpmLayout(result: CpmResult, detailMode: boolean, expandedNodes: Set<string>, mobileDescNode: string | null) {
   // 원형 / 상세 두 가지 레이아웃을 미리 계산해 두고 모드에 따라 전환
   const { nodes: circleNodes, edges: circleEdges } = useMemo(() => buildFlowElements(result, false), [result]);
   const { nodes: detailNodes, edges: detailEdges } = useMemo(() => buildFlowElements(result, true),  [result]);
@@ -130,7 +130,7 @@ export function useCpmLayout(result: CpmResult, detailMode: boolean, expandedNod
       const isCritical = (node.data as CpmNodeData).isCritical;
       return {
         ...node,
-        data: { ...node.data, isExpanded, detailMode },
+        data: { ...node.data, isExpanded, detailMode, showMobileDesc: node.id === mobileDescNode },
         style: showDetail ? {
           // 상세 박스: 배경색·테두리·고정 너비 적용
           background: isCritical ? '#fff5f5' : '#f7fafc',
@@ -143,7 +143,7 @@ export function useCpmLayout(result: CpmResult, detailMode: boolean, expandedNod
         },
       };
     }),
-    [baseNodes, detailMode, expandedNodes]
+    [baseNodes, detailMode, expandedNodes, mobileDescNode]
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(enrichedNodes);
