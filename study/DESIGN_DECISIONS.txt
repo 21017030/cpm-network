@@ -40,7 +40,7 @@ CPM 네트워크 생성기 - 시도했다가 롤백한 설계 결정 기록
   수동 위상 정렬(topological sort) + barycenter Y 정렬 알고리즘을 직접 구현.
   - 각 노드의 '계층(level)'을 BFS로 계산 → 같은 계층은 같은 열에 배치
   - 같은 계층 내 Y 순서는 선행 노드들의 평균 Y값 기준으로 정렬 (화살표 교차 최소화)
-  - 구현 위치: src/components/useCpmLayout.ts → buildFlowElements()
+  - 구현 위치: src/hooks/useCpmLayout.ts → buildFlowElements()
 
 ▸ 참고
   dagre 패키지(@dagrejs/dagre)는 package.json에 의존성으로 남아 있으나
@@ -78,6 +78,32 @@ CPM 네트워크 생성기 - 시도했다가 롤백한 설계 결정 기록
   추가로, 호버 중인 노드의 zIndex를 1000으로 높여
   툴팁이 인접 노드에 가려지지 않도록 처리했다.
   (src/components/NetworkGraph.tsx → handleNodeMouseEnter/Leave)
+
+
+────────────────────────────────────────────────────────────────
+[3] 노드 연결선 생성 드래그 비활성화
+────────────────────────────────────────────────────────────────
+
+▸ 커밋 이력
+  - 9c302df : Disable node connection dragging
+
+▸ 시도한 이유 (비활성화 전)
+  ReactFlow의 기본 동작으로, 노드 가장자리에서 드래그하면
+  새로운 연결선(엣지)을 그릴 수 있었다.
+
+▸ 비활성화한 이유
+  CPM 네트워크 다이어그램은 사용자가 직접 연결선을 추가하는 구조가 아니라,
+  입력된 선행 관계 데이터로부터 자동 생성된다.
+  사용자가 실수로 연결선을 드래그하면 혼란을 줄 수 있어 비활성화.
+
+▸ 적용 방법
+  ReactFlow 컴포넌트에 nodesConnectable={false} prop 추가.
+
+  핵심 코드 (NetworkGraph.tsx):
+    <ReactFlow
+      ...
+      nodesConnectable={false}
+    />
 
 
 ================================================================
